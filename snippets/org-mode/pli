@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: pli
+# key: pli
+# condition: t
+# --
+\begin{alignat}{4}
+\mathrm{($1)} \quad & \omit\rlap{minimize $\displaystyle $2$}\nonumber\\
+                    & \mbox{subject to} && \quad & $0 &             &\qquad & \label{pl:$1}\\
+                    &                   &&       &  & \in \{0,1\} &       & \nonumber
+\end{alignat}

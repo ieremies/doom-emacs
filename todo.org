@@ -1,0 +1,56 @@
+#+title: Todo
+
+* non-emacs
+- [[https://github.com/noisrucer/girok][noisrucer/girok]] CLI scheduler
+- [[https://github.com/Ryu0118/Kusa][Ryu0118/Kusa]] CLI display github contribution graph.
+* Completion
+- In text mode, remove completion of other words in the text.
+* magit
+- =+forge= tava travando
+- https://shivjm.blog/better-magit-diffs/
+* editor
+** [[https://github.com/xenodium/company-org-block][xenodium/company-org-block]]
+Snippets for org blocks based on babel.
+But i am not using company.
+** [[https://github.com/magnars/expand-region.el][magnars/expand-region.el]]
+Expand (contract) selected regions.
+** https://github.com/cpitclaudel/quick-peek
+* Tree sitter
+** [[https://www.reddit.com/r/emacs/comments/zkb7aq/contextaware_yasnippets_via_treesitter/][Context-aware yasnippets (via tree-sitter) : emacs]]
+** https://mjdiloreto.github.io/posts/yasnippet-helpful-buffer/
+** https://www.reddit.com/r/emacs/comments/10rsxty/treesitauto_03_now_with_automatic_installation_of/
+** https://github.com/haritkapadia/ts-movemen
+** [[https://github.com/mickeynp/combobulate][mickeynp/combobulate]]
+Text editting and navegation based on tree-sitter (needs emacs29).
+* Consult / deft alternative
+Either that or remove property drawer from deft results.
+** [[https://github.com/mclear-tools/consult-notes][mclear-tools/consult-notes]]
+** [[https://github.com/casouri/xeft][casourti/xeft]] or [[https://github.com/hasu/notdeft][hasu/notdeft]]
+* org
+** Some form of track of org-roam
+[[https:www.reddit.com/r/emacs/comments/zap1hi/comment/iypsh8g/?utm_source=share&utm_medium=web2x&context=3][auto git commit]], but it saves at every file save.
+I think some kind of save every day would be better.
+** https://github.com/colonelpanic8/org-window-habit
+** [[https://youtu.be/8vkymxjSrK0][Programmer Power Point: Dslide 0.5.1 EMACS LISP - YouTube]]
+** Agenda
+*** Adicionar linhas após o fim do dia na org-agenda
+*** Rearranjar o org-super-agenda
+Fazer uma subseção com as coisas concluídas hoje.
+*** https://github.com/fbkarsdorp/org-agenda-dashboard
+** latex export
+*** finish style options based on Rafael's style
+[[file:config.org::*Style choices][Style choices]]
+** [[https://github.com/armindarvish/consult-web][GitHub - armindarvish/consult-web: Powerful Web and Omni Search inside Emacs]]
+* Outros
+Coisas sem uma categoria boa
+** Minimap of context overview
+Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as funções/classes/variáveis (como o treemacs faz), num arquivo org, mostrar as headlines etc...
+[[https://github.com/knupfer/org-panes/blob/master/org-panes.el][org-panes/org-panes.el at master · knupfer/org-panes · GitHub]]
+** word-counter-goal
+Algo que permita contar a quantidade de palavras adicionadas/removidas num conjunto de arquivos e marcar, na modeline, a sua meta de palavras.
+[[https://github.com/bnbeckwith/wc-goal-mode][GitHub - bnbeckwith/wc-goal-mode: Emacs mode to achieve word-count goals]]
+** https://github.com/minad/vertico/issues/245
+* LSP
+** LSP-peek-ui
+** [[https://github.com/Ziqi-Yang/peek][GitHub - Ziqi-Yang/peek: Create peek view below/above cursor point to show th...]]
+Could be useful for something to peek into org-roam nodes

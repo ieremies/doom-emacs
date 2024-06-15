@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: org-block
+# key: #+
+# condition: t
+# --
+#+begin_${1:src} ${2:}
+$0
+#+end_$1

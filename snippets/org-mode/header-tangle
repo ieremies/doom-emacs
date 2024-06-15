@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Header arg - tangle
+# key: t
+# condition: (+yas/org-src-header-p)
+# --
+`(let ((out (+yas/org-prompt-header-arg :tangle "Tangle: " '("" "packages.el" "no")))) (if out (concat ":tangle " out " ") ""))`
