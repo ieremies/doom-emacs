@@ -48,7 +48,6 @@
 
 (setq-default line-spacing 1)
 (window-divider-mode 1)
-
 #+end_src
 
 ** Nano-modeline
@@ -63,17 +62,6 @@
   (doom-nano-modeline-mode 1)
   (global-hide-mode-line-mode 1))
 #+end_src
-** TODO Daemon for macos
-[[https://github.com/railwaycat/homebrew-emacsmacport/issues/52][railwaycat/homebrew-emacsmacport#52 emacsclient not functioning correctly]]
-#+begin_src elisp :tangle no
-(package! mac-pseudo-daemon
-  :recipe (:host github :repo "DarwinAwardWinner/mac-pseudo-daemon"))
-#+end_src
-#+begin_src emacs-lisp :tangle no
-(use-package! mac-pseudo-daemon
-  :config
-  (mac-pseudo-daemon-mode 1))
-#+end_src
 * Checkers
 ** spell - [[https://github.com/minad/jinx][minad/jinx]]
 #+begin_src elisp :tangle packages.el
@@ -86,14 +74,11 @@
   :init
   (setenv "PKG_CONFIG_PATH"
           (concat "/opt/homebrew/opt/glib/lib/pkgconfig/:" (getenv "PKG_CONFIG_PATH")))
-  :hook
-  (org-mode . jinx-mode)
+  :hook (org-mode . jinx-mode)
   :config
   (setq jinx-languages "pt_BR en_US"
         jinx-delay 1.0)
-  ;; faces to not spell check
-  (nconc (cadr jinx-exclude-faces) '(org-ref-ref-face)))
-
+  (nconc (cadr jinx-exclude-faces) '(org-ref-ref-face))) ;; faces to not spell check
 
 (after! vertico-multiform
   (add-to-list 'vertico-multiform-categories
@@ -186,92 +171,6 @@ Other tools to use: [[https://github.com/redpen-cc/redpen][redpen]] and [[https:
   (advice-add 'evil-ex-search-previous :after
               (lambda (&rest x) (evil-scroll-line-to-center (line-number-at-pos)))))
 #+end_src
-** Snippets
-Code copied from [[https://tecosaur.github.io/emacs-config/config.html#snippet-helpers][Tecosaur's config]].
-#+begin_src emacs-lisp
-(defun +yas/org-src-header-p ()
-  "Determine whether `point' is within a src-block header or header-args."
-  (pcase (org-element-type (org-element-context))
-    ('src-block (< (point) ; before code part of the src-block
-                   (save-excursion (goto-char (org-element-property :begin (org-element-context)))
-                                   (forward-line 1)
-                                   (point))))
-    ('inline-src-block (< (point) ; before code part of the inline-src-block
-                          (save-excursion (goto-char (org-element-property :begin (org-element-context)))
-                                          (search-forward "]{")
-                                          (point))))
-    ('keyword (string-match-p "^header-args" (org-element-property :value (org-element-context))))))
-
-(defun +yas/org-prompt-header-arg (arg question values)
-  "Prompt the user to set ARG header property to one of VALUES with QUESTION.
-The default value is identified and indicated. If either default is selected,
-or no selection is made: nil is returned."
-  (let* ((src-block-p (not (looking-back "^#\\+property:[ \t]+header-args:.*" (line-beginning-position))))
-         (default
-          (or
-           (cdr (assoc arg
-                       (if src-block-p
-                           (nth 2 (org-babel-get-src-block-info t))
-                         (org-babel-merge-params
-                          org-babel-default-header-args
-                          (let ((lang-headers
-                                 (intern (concat "org-babel-default-header-args:"
-                                                 (+yas/org-src-lang)))))
-                            (when (boundp lang-headers) (eval lang-headers t)))))))
-           ""))
-         default-value)
-    (setq values (mapcar
-                  (lambda (value)
-                    (if (string-match-p (regexp-quote value) default)
-                        (setq default-value
-                              (concat value " "
-                                      (propertize "(default)" 'face 'font-lock-doc-face)))
-                      value))
-                  values))
-    (let ((selection (consult--read values :prompt question :default default-value)))
-      (unless (or (string-match-p "(default)$" selection)
-                  (string= "" selection))
-        selection))))
-
-(defun +yas/org-src-lang ()
-  "Try to find the current language of the src/header at `point'.
-Return nil otherwise."
-  (let ((context (org-element-context)))
-    (pcase (org-element-type context)
-      ('src-block (org-element-property :language context))
-      ('inline-src-block (org-element-property :language context))
-      ('keyword (when (string-match "^header-args:\\([^ ]+\\)" (org-element-property :value context))
-                  (match-string 1 (org-element-property :value context)))))))
-
-(defun +yas/org-last-src-lang ()
-  "Return the language of the last src-block, if it exists."
-  (save-excursion
-    (beginning-of-line)
-    (when (re-search-backward "^[ \t]*#\\+begin_src" nil t)
-      (org-element-property :language (org-element-context)))))
-
-(defun +yas/org-most-common-no-property-lang ()
-  "Find the lang with the most source blocks that has no global header-args, else nil."
-  (let (src-langs header-langs)
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "^[ \t]*#\\+begin_src" nil t)
-        (push (+yas/org-src-lang) src-langs))
-      (goto-char (point-min))
-      (while (re-search-forward "^[ \t]*#\\+property: +header-args" nil t)
-        (push (+yas/org-src-lang) header-langs)))
-
-    (setq src-langs
-          (mapcar #'car
-                  ;; sort alist by frequency (desc.)
-                  (sort
-                   ;; generate alist with form (value . frequency)
-                   (cl-loop for (n . m) in (seq-group-by #'identity src-langs)
-                            collect (cons n (length m)))
-                   (lambda (a b) (> (cdr a) (cdr b))))))
-
-    (car (cl-set-difference src-langs header-langs :test #'string=))))
-#+end_src
 * Emacs
 ** Dired + dirvish
 #+begin_src elisp :tangle packages.el
@@ -337,7 +236,6 @@ Return nil otherwise."
 *** Texpresso
 #+begin_src elisp
 (add-to-list 'load-path (expand-file-name "~/bin/texpresso-repo/emacs/" user-emacs-directory))
-
 (use-package! texpresso)
 #+end_src
 * Org-mode
@@ -896,7 +794,7 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
 #+end_src
 * Tools
 ** [[https://github.com/blahgeek/emacs-lsp-booster][blahgeek/emacs-lsp-booster]]
-#+begin_src elisp :tangle no
+#+begin_src elisp
 ;; plist for deserialization -> https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
 (setenv "LSP_USE_PLISTS" "true")
 (setq lsp-use-plists 't)
@@ -932,6 +830,28 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
+** [[https://github.com/svaante/dape][svaante/dape]]
+I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][codelldb]].
+#+begin_src elisp :tangle packages.el
+(package! dape-mode
+  :recipe (:host github :repo "svaante/dape"))
+#+end_src
+#+begin_src elisp
+(use-package dape
+  :hook
+  ((kill-emacs . dape-breakpoint-save)
+   (after-init . dape-breakpoint-load))
+  :config
+  (setq dape-buffer-window-arrangement 'right
+        dape-cwd-fn 'projectile-project-root)
+  (dape-breakpoint-global-mode))
+#+end_src
+** [[https://github.com/SavchenkoValeriy/emacs-powerthesaurus][SavchenkoValeriy/emacs-powerthesaurus]]
+Use =powerthesaurus-lookup-dwim=.
+#+begin_src elisp :tangle packages.el
+(package! powerthesaurus)
+#+end_src
+
 ** [[https://github.com/jdtsmith/abridge-diff][jdtsmith/abridge-diff]] for Maggit
 #+begin_src elisp :tangle no
 (package! abridge-diff)
@@ -954,22 +874,17 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
   (setq eldoc-box-offset '(16 32 60)
         eldoc-box-only-multi-line 't))
 #+end_src
-
-** [[https://github.com/svaante/dape][svaante/dape]]
-I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][codelldb]].
-#+begin_src elisp :tangle no
-(package! dape-mode
-  :recipe (:host github :repo "svaante/dape"))
+** dslide
+#+begin_src elisp :tangle packages.el
+(package! dslide
+  :recipe (:host github :repo "positron-solutions/dslide"))
 #+end_src
-#+begin_src elisp :tangle no
-(use-package dape
-  :hook
-  ((kill-emacs . dape-breakpoint-save)
-   (after-init . dape-breakpoint-load))
-  :config
-  (setq dape-buffer-window-arrangement 'right
-        dape-cwd-fn 'projectile-project-root)
-  (dape-breakpoint-global-mode))
+#+begin_src elisp
+(after! dslide
+  (keymap-set org-mode-map "<f5>" #'dslide-deck-start)
+  (global-set-key "\C-x\C-n" 'dslide-deck-forward)
+  (global-set-key "\C-x\C-p" 'dslide-deck-backward)
+  )
 #+end_src
 
 * AI
@@ -989,4 +904,39 @@ It causes around 0.3s of startup time.
               ("C-}" . 'copilot-accept-completion-by-word))
   :config
   (setq copilot-idle-delay 0.2))
+#+end_src
+** Codeium
+#+begin_src elisp :tangle no
+(package! codeium
+  :recipe (:type git :host github :repo "Exafunction/codeium.el"))
+#+end_src
+#+begin_src elisp :tangle no
+(use-package codeium
+    :init
+    (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
+    (add-hook 'python-mode-hook
+        (lambda ()
+            (setq-local completion-at-point-functions
+                (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point)))))
+
+    :defer t ;; lazy loading, if you want
+    :config
+    (setq use-dialog-box nil) ;; do not use popup boxes
+
+    ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
+    (setq codeium-api-enabled
+        (lambda (api)
+            (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+
+    ;; You can overwrite all the codeium configs!
+    ;; for example, we recommend limiting the string sent to codeium for better performance
+    (defun my-codeium/document/text ()
+        (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
+    ;; if you change the text, you should also change the cursor_offset
+    ;; warning: this is measured by UTF-8 encoded bytes
+    (defun my-codeium/document/cursor_offset ()
+        (codeium-utf8-byte-length
+            (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
+    (setq codeium/document/text 'my-codeium/document/text)
+    (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
 #+end_src
