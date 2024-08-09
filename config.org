@@ -32,12 +32,12 @@
         window-divider-default-places 'right-only
         default-frame-alist (append (list
                                    '(min-height . 1)
-                                   '(height     . 64)
+                                   '(height     . 80)
                                    '(min-width  . 1)
-                                   '(width      . 115)
+                                   '(width      . 150)
                                    '(vertical-scroll-bars . nil)
                                    '(internal-border-width . 24)
-                                   '(fullscreen . maximized)
+                                   ;; '(fullscreen . maximized)
                                    '(undecorated-round . t)))
 
         explicit-shell-file-name "/bin/bash" ;; speed up
@@ -261,7 +261,7 @@ Other tools to use: [[https://github.com/redpen-cc/redpen][redpen]] and [[https:
 *** TODO Tecosaur fork
 Cool fork with good latex-preview support [[https://abode.karthinks.com/org-latex-preview/][org-latex-preview]].
 
-#+begin_src elisp :tangle packages.el
+#+begin_src elisp :tangle no
 (package! org :recipe
   (:host nil :repo "https://git.tecosaur.net/mirrors/org-mode.git" :remote "mirror" :fork
          (:host nil :repo "https://git.tecosaur.net/tec/org-mode.git" :branch "dev" :remote "tecosaur")
@@ -624,7 +624,7 @@ Some small thing I want to add:
 #+begin_src elisp
 (after! org
   ;; (add-to-list 'org-latex-packages-alist '("" "lmodern" nil))
-  (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
+  ;; (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
   (setq org-cite-biblatex-options "date=year,backend=biber")
 )
 #+end_src
@@ -741,8 +741,8 @@ CLOSED: [2024-06-04 Tue 23:11]
 #+end_src
 ** Beamer
 #+begin_src elisp
-(setq org-beamer-theme "[progressbar=foot]metropolis"
-      org-beamer-frame-level 2)
+;; (setq org-beamer-theme "[progressbar=foot]metropolis"
+;;       org-beamer-frame-level 2)
 #+end_src
 * UI
 ** Olivetti + auto-olivetti
@@ -794,7 +794,7 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
 #+end_src
 * Tools
 ** [[https://github.com/blahgeek/emacs-lsp-booster][blahgeek/emacs-lsp-booster]]
-#+begin_src elisp
+#+begin_src elisp :tangle no
 ;; plist for deserialization -> https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
 (setenv "LSP_USE_PLISTS" "true")
 (setq lsp-use-plists 't)
