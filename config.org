@@ -2,6 +2,7 @@
 #+Property: header-args :tangle config.el
 #+Property: header-args :results silent
 #+Startup: overview
+
 * General
 ** General
 #+begin_src elisp
@@ -171,47 +172,18 @@ Other tools to use: [[https://github.com/redpen-cc/redpen][redpen]] and [[https:
   (advice-add 'evil-ex-search-previous :after
               (lambda (&rest x) (evil-scroll-line-to-center (line-number-at-pos)))))
 #+end_src
-* Emacs
-** Dired + dirvish
+** Snippets
+Disable DOOM's snippets.
 #+begin_src elisp :tangle packages.el
-(unpin! dirvish)
-(package! diredfl)
+(package! doom-snippets :ignore t)
 #+end_src
+* Emacs
+** Dired
 #+begin_src elisp
-(use-package dired-x
-  :config
-  ;; Make dired-omit-mode hide all "dotfiles"
-  (setq dired-omit-files
-        (concat dired-omit-files "\\|^\\..*$")))
-
-(use-package! diredfl
-  :hook (dired-mode . diredfl-mode)
-  :hook (dirvish-directory-view-mode . diredfl-mode)
-  :config
-  (set-face-attribute 'diredfl-dir-name nil :bold t))
-
-(use-package dirvish
-  :init
-  (dirvish-override-dired-mode)
-  :config
-  (dirvish-override-dired-mode)
-  ;; (dirvish-peek-mode)
-  (dirvish-side-follow-mode)
-  (setq dirvish-attributes
-        '(vc-state file-size git-msg subtree-state collapse file-time)
-        dirvish-header-line-height '(25 . 35)
-        dirvish-side-width 25
-        dirvish-header-line-format '(:left (path) :right (free-space))
-        delete-by-moving-to-trash t
-        dired-listing-switches "-l --human-readable --group-directories-first --no-group"
-        dirvish-mode-line-format '(:left (sort symlink) :right (vc-info yank index))
-        dirvish-subtree-listing-switches dired-listing-switches)
-  )
-
 (after! dirvish
-  (map! :mode dired-mode
-        :desc "Toggle subtree of current directory."
-        :nvi "<tab>" #'dirvish-subtree-toggle))
+  (dirvish-side-follow-mode)
+  (setq dirvish-attributes '(file-size nerd-icons git-msg subtree-state)
+        dirvish-side-width 25))
 #+end_src
 * Languages
 ** clangd for C/C++
@@ -246,7 +218,9 @@ Other tools to use: [[https://github.com/redpen-cc/redpen][redpen]] and [[https:
         org-log-done 'time ; log when a task was closed
         org-archive-location ".%s_archive::"
         org-export-allow-bind-keywords 't
-        org-image-actual-width '(0.9))
+        org-image-actual-width '(0.9)
+        org-ellipsis "…"
+        +fold-ellipsis org-ellipsis)
 
   (map! :leader :desc "Paste org subtree" "m s p"#'org-paste-subtree
                 :desc "Yank org subtree"  "m s y"#'org-copy-subtree
@@ -354,7 +328,6 @@ Toggle the appearance of hidden elements in org-mode.
   :config
   (setq org-auto-align-tags nil
         org-pretty-entities t
-        org-ellipsis "…"
         org-agenda-tags-column 0
         org-agenda-block-separator ?─)
   (set-face-attribute 'org-modern-symbol nil :family "Hack Nerd Font"))
@@ -580,7 +553,20 @@ Already loaded by =:tools biblio=.
    " iff " " if, and only if, "
    "cT" "c^{T}"
    "bT" "b^{T}"
-   "AT" "A^{T}"))
+   "AT" "A^{T}"
+   ;; beamer
+   "beamerpause" "#+beamer: \\pause"
+   "beamerlist" "#+attr_beamer: :overlay <+->"
+   ;; math variables during text
+   " v " " $v$ "
+   " x " " $x$ "
+   " y " " $y$ "
+   " z " " $z$ "
+   " w " " $w$ "
+   " m " " $m$ "
+   " n " " $n$ "
+   )
+  )
 #+end_src
 **** Latex auto activating snippets
 #+begin_src emacs-lisp :tangle packages.el
@@ -623,8 +609,8 @@ Some small thing I want to add:
 *** Default preamble
 #+begin_src elisp
 (after! org
-  ;; (add-to-list 'org-latex-packages-alist '("" "lmodern" nil))
-  ;; (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
+  (add-to-list 'org-latex-packages-alist '("" "lmodern" nil))
+  (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
   (setq org-cite-biblatex-options "date=year,backend=biber")
 )
 #+end_src
@@ -705,11 +691,11 @@ I don't the curly braces disappearing.
 *** Code highlighting - [[https://github.com/tecosaur/engrave-faces][tecosaur/engrave-faces]]
 Seems to have a substantioal overhead on compile.
 Just check wheter this affects any other pdf that does not contain it.
-#+begin_src elisp :tangle no
+#+begin_src elisp :tangle packages.el
 (package! engrave-faces
   :recipe (:host github :repo "tecosaur/engrave-faces"))
 #+end_src
-#+begin_src elisp :tangle no
+#+begin_src elisp
 ;; TODO something has changed in org 9.6
 (use-package! engrave-faces-latex
   :after ox-latex)
@@ -724,25 +710,27 @@ By doing a face-font-rescale, for some reason, the first two levels of org-moder
 #+end_src
 *** KILL org-special-blocks-extra
 CLOSED: [2024-06-04 Tue 23:11]
-#+begin_src elisp :tangle no
+#+begin_src elisp :tangle packages.el
 (package! org-special-block-extras)
 #+end_src
-#+begin_src elisp :tangle no
+#+begin_src elisp
 (use-package! org-special-block-extras
   :hook (org-mode . org-special-block-extras-mode))
 #+end_src
-#+begin_src elisp :tangle no
-(org-defblock theo (label "" name "") 'nil
-        "Theorems block."
-        (format (if (equal backend 'latex)
-                        "\\begin{theorem}[%s]\\label{%s}%s\\end{theorem}"
-                        "Theorem: %s %s %s")
-                name label contents))
+#+begin_src elisp
+(after! org-special-blocks-extras
+  (org-defblock theo (label "" name "") 'nil
+                "Theorems block."
+                (format (if (equal backend 'latex)
+                            "\\begin{theorem}[%s]\\label{%s}%s\\end{theorem}"
+                          "Theorem: %s %s %s")
+                        name label contents)))
 #+end_src
+I should create a link like to add a sidenote or footnote.
 ** Beamer
 #+begin_src elisp
-;; (setq org-beamer-theme "[progressbar=foot]metropolis"
-;;       org-beamer-frame-level 2)
+(setq org-beamer-theme "[progressbar=foot]metropolis"
+      org-beamer-frame-level 2)
 #+end_src
 * UI
 ** Olivetti + auto-olivetti

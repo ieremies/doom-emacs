@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # name: org-block
-# key: #+
+# key: begin
 # condition: t
 # --
 #+begin_${1:src} ${2:}

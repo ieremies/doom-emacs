@@ -3,6 +3,8 @@
 * non-emacs
 - [[https://github.com/noisrucer/girok][noisrucer/girok]] CLI scheduler
 - [[https://github.com/Ryu0118/Kusa][Ryu0118/Kusa]] CLI display github contribution graph.
+- [[https://youtu.be/8W06wMNZmo8][How To Make An Amazing Custom Menu Bar For Your Mac With Sketchybar - YouTube]]
+- [[https://youtu.be/-FoWClVHG5g][Aerospace Is The Best Tiling Window Manager I've Tried On macOS - YouTube]]
 * Completion
 - In text mode, remove completion of other words in the text.
 * magit
@@ -41,6 +43,7 @@ Fazer uma subseção com as coisas concluídas hoje.
 *** finish style options based on Rafael's style
 [[file:config.org::*Style choices][Style choices]]
 ** [[https://github.com/armindarvish/consult-web][GitHub - armindarvish/consult-web: Powerful Web and Omni Search inside Emacs]]
+** https://github.com/isamert/corg.el
 * Outros
 Coisas sem uma categoria boa
 ** Minimap of context overview
@@ -54,3 +57,5 @@ Algo que permita contar a quantidade de palavras adicionadas/removidas num conju
 ** LSP-peek-ui
 ** [[https://github.com/Ziqi-Yang/peek][GitHub - Ziqi-Yang/peek: Create peek view below/above cursor point to show th...]]
 Could be useful for something to peek into org-roam nodes
+* UI
+** https://github.com/rougier/book-mode
