@@ -3,6 +3,8 @@
 #+Property: header-args :results silent
 #+Startup: overview
 
+# Colocar um widget na sketcybar para mostrar a tarefa que o emacs está clocking
+
 * General
 ** General
 #+begin_src elisp
@@ -79,7 +81,8 @@
   :config
   (setq jinx-languages "pt_BR en_US"
         jinx-delay 1.0)
-  (nconc (cadr jinx-exclude-faces) '(org-ref-ref-face))) ;; faces to not spell check
+  (nconc (cadr jinx-exclude-faces) '(org-ref-ref-face)) ;; faces to not spell check
+  (keymap-global-set "C-f" #'jinx-correct))
 
 (after! vertico-multiform
   (add-to-list 'vertico-multiform-categories
@@ -121,10 +124,6 @@ Other tools to use: [[https://github.com/redpen-cc/redpen][redpen]] and [[https:
 * Completion
 ** corfu
 #+begin_src elisp
-;; (add-hook! (org-mode)
-;;   (defun +corfu-add-cape-elisp-block-h ()
-;;     (add-hook 'completion-at-point-functions #'org-roam-complete-everywhere 0 t)
-;;     (add-hook 'completion-at-point-functions #'citar-capf 0 t)))
 (after! corfu
   (setq corfu-auto-delay 0.5))
 #+end_src
@@ -135,9 +134,9 @@ Other tools to use: [[https://github.com/redpen-cc/redpen][redpen]] and [[https:
 #+begin_src elisp
 (use-package cape
   :init
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+  ;; (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   (add-to-list 'completion-at-point-functions #'cape-keyword)
   (add-to-list 'completion-at-point-functions #'cape-abbrev))
 #+end_src
@@ -177,6 +176,10 @@ Disable DOOM's snippets.
 #+begin_src elisp :tangle packages.el
 (package! doom-snippets :ignore t)
 #+end_src
+
+*** TODO TAB during snippet expansion is very buggy. For what I could tell, completion and org-mode try to get ahead or yasnippets, breaking the ability to go to next field.
+If there are no fields in the snippet, everything works fine
+
 * Emacs
 ** Dired
 #+begin_src elisp
@@ -232,7 +235,7 @@ Disable DOOM's snippets.
     (add-hook 'org-mode-hook (lambda () (hl-todo-mode 1))))
   (add-hook 'org-mode-hook (lambda () (org-num-mode 1))))
 #+end_src
-*** TODO Tecosaur fork
+*** HOLD Tecosaur fork
 Cool fork with good latex-preview support [[https://abode.karthinks.com/org-latex-preview/][org-latex-preview]].
 
 #+begin_src elisp :tangle no
@@ -452,9 +455,10 @@ Also look into:
 
 ** Citations and references
 *** org-cite
-#+begin_src elisp :tangle no
-(after! oc
-  (setq org-cite-export-processors '((t csl))))
+#+begin_src elisp
+(after! oc                        ;;export processor bib-style cite-ctyle
+  (setq org-cite-export-processors '((latex biblatex "numeric,bibstyle=ieee" "text")
+                                     (t csl))))
 #+end_src
 *** citar
 Already loaded by =:tools biblio=.
@@ -470,10 +474,6 @@ Already loaded by =:tools biblio=.
         `((file ,(nerd-icons-faicon "nf-fa-file_o" :face 'nerd-icons-green :v-adjust -0.1) . " ")
           (note ,(nerd-icons-octicon "nf-oct-note" :face 'nerd-icons-blue :v-adjust -0.3) . " ")
           (link ,(nerd-icons-octicon "nf-oct-link" :face 'nerd-icons-orange :v-adjust 0.01) . " ")))
-
-  ;; TODO the capf is not working
-  ;; (add-hook! 'latex-mode-hook #'citar-capf-setup)
-  ;; (add-hook! 'org-mode-hook #'citar-capf-setup)
 
   (map! :mode org-mode
         :desc "Insert a citation"
@@ -535,6 +535,7 @@ Already loaded by =:tools biblio=.
         org-cite-csl-activate-use-citar-cache t
         org-cite-csl-activate-use-document-style t))
 #+end_src
+
 *** Auto activating snippets
 #+begin_src elisp :tangle packages.el
 (package! aas)
@@ -546,14 +547,23 @@ Already loaded by =:tools biblio=.
   (aas-set-snippets 'org-mode
    "\\cite" #'org-cite-insert
    "\\ref" #'org-ref-insert-ref-link
+
+   ;; Special blocks
+   "#+theo" '(yas "#+begin_theo\n$0\n#+end_theo")
+   "#+proof" '(yas "#+begin_proof\n$0\n#+end_proof")
+   "#+defi" '(yas "#+begin_defi\n$0\n#+end_defi")
+   "#+coro" '(yas "#+begin_coro\n$0\n#+end_coro")
+   "#+remark" '(yas "#+begin_remark\n$0\n#+end_remark")
+   "#+lemma" '(yas "#+begin_lemma\n$0\n#+end_lemma")
+   "#+quote" '(yas "#+begin_quote\n$0\n#+end_quote")
+   "#+abs" '(yas "#+begin_abstract\n$0\n#+end_abstract")
+   "#+src" '(yas "#+begin_src$0\n#+end_src")
+
    ;; TODO some of those is math-only
    "barx" "\bar{x}"
    "baru" "\bar{u}"
    " sse " " se, e somente se, "
    " iff " " if, and only if, "
-   "cT" "c^{T}"
-   "bT" "b^{T}"
-   "AT" "A^{T}"
    ;; beamer
    "beamerpause" "#+beamer: \\pause"
    "beamerlist" "#+attr_beamer: :overlay <+->"
@@ -568,6 +578,8 @@ Already loaded by =:tools biblio=.
    )
   )
 #+end_src
+
+
 **** Latex auto activating snippets
 #+begin_src emacs-lisp :tangle packages.el
 (package! laas
@@ -611,7 +623,7 @@ Some small thing I want to add:
 (after! org
   (add-to-list 'org-latex-packages-alist '("" "lmodern" nil))
   (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
-  (setq org-cite-biblatex-options "date=year,backend=biber")
+  (setq org-cite-biblatex-options "date=year,backend=biber,bibstyle=ieee")
 )
 #+end_src
 
@@ -630,6 +642,13 @@ All exports are placed under a folder called build.
 #+begin_src elisp
 (after! org
   (setq org-highlight-latex-and-related '(native script entities)))
+#+end_src
+
+The following code is used  by Tecosaur to fix the background color of =org-block-face= added becouse of the =native= in =org-highlight-latex-and-related=.
+Unfortunately, it also makes the latex code use the non monospaced font.
+
+For now, I will leave it off. The gray brackground for latex code is not bad, unless inline math $x \in \RR$ like this.
+#+begin_src elisp :tangle no
 (require 'org-src)
 (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
 #+end_src
@@ -695,7 +714,7 @@ Just check wheter this affects any other pdf that does not contain it.
 (package! engrave-faces
   :recipe (:host github :repo "tecosaur/engrave-faces"))
 #+end_src
-#+begin_src elisp
+#+begin_src elisp :tangle no
 ;; TODO something has changed in org 9.6
 (use-package! engrave-faces-latex
   :after ox-latex)
@@ -714,17 +733,58 @@ CLOSED: [2024-06-04 Tue 23:11]
 (package! org-special-block-extras)
 #+end_src
 #+begin_src elisp
+
+  (defun my/generate-block (env name label)
+    "Generate a block for LaTeX or plain text with optional name and label."
+    (if (equal backend 'latex)
+        ;; LaTeX block generation
+        (cond
+         ;; No name and no label
+         ((and (string-equal name "") (string-equal label ""))
+          (format "\\begin{%s}%s\\end{%s}" env contents env))
+         ;; No name, but label present
+         ((string-equal name "")
+          (format "\\begin{%s}\\label{%s}%s\\end{%s}" env label contents env))
+         ;; Name present, no label
+         ((string-equal label "")
+          (format "\\begin{%s}[%s]%s\\end{%s}" env name contents env))
+         ;; Both name and label present
+         (t
+          (format "\\begin{%s}[%s]\\label{%s}%s\\end{%s}" env name label contents env)))
+      ;; Plain text block generation
+      (cond
+       ;; No name and no label
+       ((and (string-equal name "") (string-equal label ""))
+        (format "%s: %s" (capitalize env) contents))
+       ;; No name, but label present
+       ((string-equal name "")
+        (format "%s: %s %s" (capitalize env) label contents))
+       ;; Name present, no label
+       ((string-equal label "")
+        (format "%s: [%s] %s" (capitalize env) name contents))
+       ;; Both name and label present
+       (t
+        (format "%s: [%s] %s %s" (capitalize env) name label contents)))))
 (use-package! org-special-block-extras
-  :hook (org-mode . org-special-block-extras-mode))
-#+end_src
-#+begin_src elisp
-(after! org-special-blocks-extras
-  (org-defblock theo (label "" name "") 'nil
-                "Theorems block."
-                (format (if (equal backend 'latex)
-                            "\\begin{theorem}[%s]\\label{%s}%s\\end{theorem}"
-                          "Theorem: %s %s %s")
-                        name label contents)))
+  :hook (org-mode . org-special-block-extras-mode)
+  :config
+  (org-defblock theo (name "" label "") 'nil ""
+                (my/generate-block "theorem" name label))
+  (org-defblock defi (name "" label "") 'nil ""
+                (my/generate-block "definition" name label))
+  (org-defblock coro (name "" label "") 'nil ""
+                (my/generate-block "corollary" name label))
+  (org-defblock prep (name "" label "") 'nil ""
+                (my/generate-block "preposition" name label))
+  (org-defblock lemma (name "" label "") 'nil ""
+                (my/generate-block "lemma" name label))
+  (org-defblock proof (name "" label "") 'nil ""
+                (my/generate-block "proof" name label))
+  (org-defblock remark (name "" label "") 'nil ""
+                (my/generate-block "remark" name label))
+  (org-defblock example (name "" label "") 'nil ""
+                (my/generate-block "example" name label))
+  )
 #+end_src
 I should create a link like to add a sidenote or footnote.
 ** Beamer
