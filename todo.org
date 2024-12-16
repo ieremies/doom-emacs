@@ -3,13 +3,16 @@
 * non-emacs
 - [[https://github.com/noisrucer/girok][noisrucer/girok]] CLI scheduler
 - [[https://github.com/Ryu0118/Kusa][Ryu0118/Kusa]] CLI display github contribution graph.
-- [[https://youtu.be/8W06wMNZmo8][How To Make An Amazing Custom Menu Bar For Your Mac With Sketchybar - YouTube]]
+- [[https://youtu.be/8W06wMNZmo8][How To Make An Amazing Custom Menu Bar For Your Mac With Sketchybar - YouTube]] -> mas eu preciso que mostre o próximo appointment como o Fantastical faz.
 - [[https://youtu.be/-FoWClVHG5g][Aerospace Is The Best Tiling Window Manager I've Tried On macOS - YouTube]]
-* Completion
+* Completion / Spell checking
 - In text mode, remove completion of other words in the text.
-* magit
+- Auto correct words, perhaps based on context (AI??)
+- [[https://github.com/xenodium/org-block-capf][GitHub - xenodium/org-block-capf]]
+* Magit
 - =+forge= tava travando
 - https://shivjm.blog/better-magit-diffs/
+- [[https://github.com/alphapapa/magit-todos/tree/v1.8][GitHub - alphapapa/magit-todos at v1.8]]
 * editor
 ** [[https://github.com/xenodium/company-org-block][xenodium/company-org-block]]
 Snippets for org blocks based on babel.
@@ -24,10 +27,6 @@ Expand (contract) selected regions.
 ** https://github.com/haritkapadia/ts-movemen
 ** [[https://github.com/mickeynp/combobulate][mickeynp/combobulate]]
 Text editting and navegation based on tree-sitter (needs emacs29).
-* Consult / deft alternative
-Either that or remove property drawer from deft results.
-** [[https://github.com/mclear-tools/consult-notes][mclear-tools/consult-notes]]
-** [[https://github.com/casouri/xeft][casourti/xeft]] or [[https://github.com/hasu/notdeft][hasu/notdeft]]
 * org
 ** Some form of track of org-roam
 [[https:www.reddit.com/r/emacs/comments/zap1hi/comment/iypsh8g/?utm_source=share&utm_medium=web2x&context=3][auto git commit]], but it saves at every file save.
@@ -39,11 +38,14 @@ I think some kind of save every day would be better.
 *** Rearranjar o org-super-agenda
 Fazer uma subseção com as coisas concluídas hoje.
 *** https://github.com/fbkarsdorp/org-agenda-dashboard
-** latex export
-*** finish style options based on Rafael's style
-[[file:config.org::*Style choices][Style choices]]
+** finish style options based on Rafael's style
 ** [[https://github.com/armindarvish/consult-web][GitHub - armindarvish/consult-web: Powerful Web and Omni Search inside Emacs]]
 ** https://github.com/isamert/corg.el
+** [[https://github.com/4honor/org-excalidraw?tab=readme-ov-file][GitHub - 4honor/org-excalidraw: Open, create, export, and display excalidraw ...]]
+* Research (citation, org-roam, references)
+- https://github.com/yibie/org-zettel-ref-mode?tab=readme-ov-file
+- [[https://github.com/mclear-tools/consult-notes][mclear-tools/consult-notes]]
+- [[https://github.com/casouri/xeft][casourti/xeft]] or [[https://github.com/hasu/notdeft][hasu/notdeft]]
 * Outros
 Coisas sem uma categoria boa
 ** Minimap of context overview
@@ -53,9 +55,23 @@ Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as fun�
 Algo que permita contar a quantidade de palavras adicionadas/removidas num conjunto de arquivos e marcar, na modeline, a sua meta de palavras.
 [[https://github.com/bnbeckwith/wc-goal-mode][GitHub - bnbeckwith/wc-goal-mode: Emacs mode to achieve word-count goals]]
 ** https://github.com/minad/vertico/issues/245
+** https://www.youtube.com/watch?v=e7gBY6wCdxQ
+** https://www.reddit.com/r/emacs/comments/1g8yziv/toggle_hiding_direds_absolute_path/
+** https://github.com/eval-exec/super-hint.el
+* AI
+** https://github.com/daedsidog/evedel
+** https://www.reddit.com/r/emacs/comments/1g57cu7/spiffying_up_automatic_smerge_insertions_animated/
+** https://github.com/Aider-AI/aider | https://github.com/tninja/aider.el
+** https://github.com/jart/emacs-copilot
+** https://github.com/s-kostyaev/ellama
+** [[https://github.com/lanceberge/elysium][GitHub - lanceberge/elysium: Automatically apply AI-generated code changes in...]]
+** [[https://lepisma.xyz/2024/09/12/emacs-dictation-mode/index.html][Dictation Mode for Emacs]]
+** [[https://blog.tomoya.dev/posts/emacs-on-local-llm/][最強ローカルLLM実行環境としてのEmacs | 日々、とんは語る。]]
+** [[https://github.com/meain/yap][GitHub - meain/yap: Your Assistant for Prompting LLMs]]
 * LSP
 ** LSP-peek-ui
 ** [[https://github.com/Ziqi-Yang/peek][GitHub - Ziqi-Yang/peek: Create peek view below/above cursor point to show th...]]
 Could be useful for something to peek into org-roam nodes
 * UI
 ** https://github.com/rougier/book-mode
+** https://github.com/rougier/nano-sidebar
