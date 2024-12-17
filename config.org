@@ -110,29 +110,26 @@ Default window configuration.
 #+begin_src elisp :tangle packages.el
 (package! lsp-ltex)
 #+end_src
-#+begin_src elisp
-(use-package lsp-ltex
-  :init (setq lsp-ltex-version "16.0.0")
-  :config
-  (setq lsp-ltex-additional-rules-enable-picky-rules 't
-        lsp-ltex-completion-enabled 't
-        ;; lsp-ltex-mother-tongue "pt-BR"
-        lsp-ltex-check-frequency "save")
-  )
-#+end_src
-**** Flycheck-languagetool
-#+begin_src elisp :tangle packages.el
-(package! lsp-ltex)
-#+end_src
 #+begin_src elisp :tangle no
 (use-package lsp-ltex
   :init (setq lsp-ltex-version "16.0.0")
   :config
   (setq lsp-ltex-additional-rules-enable-picky-rules 't
-        ;; lsp-ltex-completion-enabled 't
-        lsp-ltex-mother-tongue "pt-BR"
+        ;; lsp-ltex-completion-enabled 't ;; BUG The connected server(s) does not support method textDocument/completion.
         lsp-ltex-check-frequency "save")
   )
+#+end_src
+**** KILL Flycheck-languagetool
+Could not make it to work.
+#+begin_src elisp :tangle packages.el
+(package! flycheck-languagetool)
+#+end_src
+#+begin_src elisp :tangle no
+(use-package flycheck-languagetool
+  :ensure t
+  :hook (text-mode . flycheck-languagetool-setup)
+  :init
+  (setq flycheck-languagetool-server-jar "/User/ieremies/bin/LanguageTool-6.5/languagetool-server.jar"))
 #+end_src
 *** TextLint
 #+BEGIN_src bash :tangle no
@@ -148,14 +145,24 @@ npm install --global textlint textlint-rule-max-comma
 #+begin_src elisp :tangle packages.el
 (package! flycheck-grammarly)
 #+end_src
-#+begin_src elisp :tangle no
+#+begin_src elisp
 (use-package! flycheck-grammarly
   :after flycheck
-  :init
-  (flycheck-grammarly-setup)
-  :config
-  (setq flycheck-grammarly-check-time 2.0))
+  :init (flycheck-grammarly-setup)
+  :config (setq flycheck-grammarly-check-time 2.0))
 #+end_src
+
+#+begin_src elisp :tangle packages.el
+(package! lsp-grammarly)
+#+end_src
+#+begin_src elisp :tangle no
+(use-package lsp-grammarly
+  :ensure t
+  :hook (text-mode . (lambda ()
+                       (require 'lsp-grammarly)
+                       (lsp))))  ; or lsp-deferred
+#+end_src
+
 
 * Completion
 ** corfu
@@ -931,8 +938,7 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
   :hook ((prog-mode) . indent-bars-mode))
 #+end_src
 * Tools
-** LSP
-*** [[https://github.com/blahgeek/emacs-lsp-booster][blahgeek/emacs-lsp-booster]]
+** [[https://github.com/blahgeek/emacs-lsp-booster][blahgeek/emacs-lsp-booster]]
 #+begin_src elisp
 ;; plist for deserialization -> https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
 (setenv "LSP_USE_PLISTS" "true")
