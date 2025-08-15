@@ -3,17 +3,37 @@
 #+Property: header-args :results silent
 #+Startup: overview
 
-# Colocar um widget na sketcybar para mostrar a tarefa que o emacs está clocking
-
 * General
+** Compile-angel
+Ensure all loaded .el files are compiled beforehand.
+#+begin_src elisp :tangle packages.el
+(package! compile-angel)
+#+end_src
+
+This shoudl be in ~early-init.el~, but I am not sure how to do so in doom's emacs:
+#+begin_src elisp
+(setq load-prefer-newer t)
+#+end_src
+
+#+begin_src elisp
+;; Set `compile-angel-verbose' to nil to disable compile-angel messages.
+;; (When set to nil, compile-angel won't show which file is being compiled.)
+(setq compile-angel-verbose t)
+
+;; Uncomment the line below to compile automatically when an Elisp file is saved
+;; (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)
+
+;; A global mode that compiles .el files before they are loaded
+;; using `load' or `require'.
+(compile-angel-on-load-mode)
+#+end_src
 ** General
 #+begin_src elisp
 (after! doom
-  (setq user-full-name "Ieremies Vieira da Fonseca Romero"
+  (setq user-full-name "Ieremies V. F. Romero"
         user-mail-address "ieremies@gmail.com"
-        doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 12)
-        doom-variable-pitch-font (font-spec :family "NotoSans Nerd Font" :size 13 :weight 'medium)
-        ;; Hanken Grotesk light (300)
+        doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 13)
+        mixed-pitch-set-height 't
         doom-theme 'other-doom-nano-light
 
         evil-want-fine-undo t
@@ -25,23 +45,29 @@
         org-hide-emphasis-markers 't ;; Hide org markup
         ))
 
+;;
+(set-face-attribute 'variable-pitch nil
+                        :family "NotoSans Nerd Font"  ;; "Hanken Grotesk" "Helvetica"
+                        :height 140)
+
 (setq-default delete-by-moving-to-trash t
               window-combination-resize t)
 
-(setq-default line-spacing 1)
+(setq-default line-spacing 1
+              menu-bar-mode -1)
+(setq menu-bar-mode -1)
 (window-divider-mode 1)
 #+end_src
 
-Some performance optimization.
+Some packages invoke the shell and the load of the respective rc file can be considerable.
 #+begin_src elisp
 (after! doom
   (setq inhibit-compacting-font-caches t
         display-line-numbers-type nil
-        explicit-shell-file-name "/bin/bash")) ;; some packages invoke the shell and the load of
-                                               ;; {ba,z,fi}shrc can be considerable
+        explicit-shell-file-name "/bin/bash")) 
 #+end_src
 
-Configuration of MacOS.
+Configuration for MacOS.
 #+begin_src elisp
 (after! doom
   (setq frame-title-format " "
@@ -78,6 +104,19 @@ Default window configuration.
   (doom-nano-modeline-mode 1)
   (global-hide-mode-line-mode 1))
 #+end_src
+** Ultra-scroll
+#+begin_src elisp :tangle packages.el
+(package! ultra-scroll
+  :recipe (:host github :repo "jdtsmith/ultra-scroll"))
+#+end_src
+#+begin_src elisp
+(use-package ultra-scroll
+  :init
+  (setq scroll-conservatively 3 ; or whatever value you prefer, since v0.4
+        scroll-margin 0)        ; important: scroll-margin>0 not yet supported
+  :config
+  (ultra-scroll-mode 1))
+#+end_src
 * Checkers
 ** spell - [[https://github.com/minad/jinx][minad/jinx]]
 #+begin_src elisp :tangle packages.el
@@ -102,50 +141,47 @@ Default window configuration.
   (add-to-list 'vertico-multiform-categories
                '(jinx (vertico-grid-annotate . 25)))
   (vertico-multiform-mode 1))
+
+(with-eval-after-load 'jinx
+  (define-key jinx-overlay-map
+    [down-mouse-1]
+    `(menu-item "" (keymap) :filter ,#'jinx--correct-menu)))
+
+#+end_src
+
+Save misspelling and correction as abbreviation.
+#+begin_src elisp
+(after! jinx
+  (defun jinx--add-to-abbrev (overlay word)
+    "Add abbreviation to `global-abbrev-table'.
+The misspelled word is taken from OVERLAY.  WORD is the corrected word."
+    (let ((abbrev (buffer-substring-no-properties
+                   (overlay-start overlay)
+                   (overlay-end overlay))))
+      (message "Abbrev: %s -> %s" abbrev word)
+      (define-abbrev global-abbrev-table abbrev word)))
+
+  (advice-add 'jinx--correct-replace :before #'jinx--add-to-abbrev))
 #+end_src
 
 ** Grammar
-*** Language Tool
-**** lsp-ltex
+*** lsp-ltex
 #+begin_src elisp :tangle packages.el
 (package! lsp-ltex)
 #+end_src
-#+begin_src elisp :tangle no
+#+begin_src elisp 
 (use-package lsp-ltex
   :init (setq lsp-ltex-version "16.0.0")
   :config
   (setq lsp-ltex-additional-rules-enable-picky-rules 't
-        ;; lsp-ltex-completion-enabled 't ;; BUG The connected server(s) does not support method textDocument/completion.
-        lsp-ltex-check-frequency "save")
-  )
-#+end_src
-**** KILL Flycheck-languagetool
-Could not make it to work.
-#+begin_src elisp :tangle packages.el
-(package! flycheck-languagetool)
-#+end_src
-#+begin_src elisp :tangle no
-(use-package flycheck-languagetool
-  :ensure t
-  :hook (text-mode . flycheck-languagetool-setup)
-  :init
-  (setq flycheck-languagetool-server-jar "/User/ieremies/bin/LanguageTool-6.5/languagetool-server.jar"))
-#+end_src
-*** TextLint
-#+BEGIN_src bash :tangle no
-npm install --global textlint textlint-rule-max-comma
-#+end_src
-#+begin_src elisp :tangle no
-(after! flycheck
-  (setq flycheck-textlint-config "~/.config/textlint/textlintrc.json")
-  ;; (add-to-list 'flycheck-textlint-plugin-alist '(tex-mode . "latex"))
-  )
+        ;; lsp-ltex-completion-enabled 'nil BUG
+        lsp-ltex-check-frequency "save"))
 #+end_src
 *** Grammarly
 #+begin_src elisp :tangle packages.el
 (package! flycheck-grammarly)
 #+end_src
-#+begin_src elisp
+#+begin_src elisp :tangle no
 (use-package! flycheck-grammarly
   :after flycheck
   :init (flycheck-grammarly-setup)
@@ -163,31 +199,9 @@ npm install --global textlint textlint-rule-max-comma
                        (lsp))))  ; or lsp-deferred
 #+end_src
 
-
 * Completion
-** corfu
-#+begin_src elisp
-(after! corfu
-  (setq corfu-auto-delay 0.5
-        text-mode-ispell-word-completion nil))
-#+end_src
-
-I have twice ran into the problem of "no registered capabilities" for an LSP.
-It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it all.
-** Cape
-#+begin_src elisp :tangle packages.el
-(package! cape)
-#+end_src
-#+begin_src elisp
-(use-package cape
-  :init
-  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  ;; (add-to-list 'completion-at-point-functions #'cape-elisp-block)
-  (add-to-list 'completion-at-point-functions #'cape-keyword)
-  (add-to-list 'completion-at-point-functions #'cape-abbrev))
-#+end_src
 ** Hippie
+This is something I should use more.
 #+begin_src elisp
 (global-set-key [remap dabbrev-expand] #'hippie-expand)
 (setq hippie-expand-try-functions-list
@@ -203,6 +217,96 @@ It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it a
         try-expand-line
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
+#+end_src
+** corfu
+#+begin_src elisp
+(after! corfu
+  (setq corfu-auto-delay 0.2
+        text-mode-ispell-word-completion nil
+        corfu-popupinfo-delay '(0.5 . 0.2)
+        corfu-count 10)
+  (set-face-attribute 'corfu-default nil
+                      :background (face-attribute 'default :background))
+  (set-face-attribute 'corfu-current nil
+                      :background "#FAFAFA"))
+#+end_src
+
+I have twice ran into the problem of "no registered capabilities" for an LSP.
+It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it all.
+** Cape
+#+begin_src elisp :tangle packages.el
+(package! cape)
+#+end_src
+#+begin_src elisp
+(use-package cape
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-abbrev)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev))
+#+end_src
+** Vertico
+https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-command-or-completion-category
+#+begin_src elisp
+(after! (vertico vertico-posframe)
+  (setq vertico-posframe-parameters
+        '((left-fringe . 8)
+          (right-fringe . 8))))
+#+end_src
+** Consult
+#+begin_src elisp :tangle no
+(consult-customize
+ consult-line
+ :add-history (seq-some #'thing-at-point '(region symbol)))
+
+(defalias 'consult-line-thing-at-point 'consult-line)
+
+(consult-customize
+ consult-line-thing-at-point
+ :initial (thing-at-point 'symbol))
+#+end_src
+** Flyover
+#+begin_src elisp :tangle packages.el
+(package! flyover
+  :recipe (:host github :repo "konrad1977/flyover"))
+#+end_src
+#+begin_src elisp :tangle no
+(use-package! flyover
+    :after flycheck
+    :hook (flycheck-mode . flyover-mode)
+    :config
+    ;; Use theme colors for error/warning/info faces
+    (setq flyover-use-theme-colors t)
+    ;; Adjust background lightness (lower values = darker)
+    (setq flyover-background-lightness 45)
+    ;; Make icon background darker than foreground
+    (setq flyover-percent-darker 40)
+    (setq flyover-text-tint 'lighter) ;; or 'darker or nil
+    ;; "Percentage to lighten or darken the text when tinting is enabled."
+    (setq flyover-text-tint-percent 50))
+#+end_src
+** Hotfuzz+orderless
+#+begin_src elisp :tangle packages.el
+(package! hotfuzz
+  :recipe (:host github :repo "axelf4/hotfuzz"))
+#+end_src
+#+begin_src elisp
+;;;###autoload
+(defun hotfuzz+orderless-all-completions (str table pred pt)
+  (let ((words (split-string str nil t)))
+    (orderless-all-completions
+     (string-join (cdr words) " ")
+     (if (car words)
+         (nconc (hotfuzz-all-completions (car words) table pred pt) nil)
+       table)
+     pred pt)))
+
+;;;###autoload
+(progn
+  (add-to-list 'completion-styles-alist
+               '( hotfuzz+orderless orderless-try-completion hotfuzz+orderless-all-completions
+                  "Filter first component with Hotfuzz, rest with Orderless."))
+  (put 'hotfuzz+orderless 'completion--adjust-metadata #'hotfuzz--adjust-metadata))
 #+end_src
 * Editor
 ** evil
@@ -223,9 +327,6 @@ Disable DOOM's snippets.
 #+begin_src elisp :tangle packages.el
 (package! doom-snippets :ignore t)
 #+end_src
-
-*** TODO TAB during snippet expansion is very buggy. For what I could tell, completion and org-mode try to get ahead or yasnippets, breaking the ability to go to next field.
-If there are no fields in the snippet, everything works fine
 
 * Emacs
 ** Dired
@@ -256,8 +357,9 @@ If there are no fields in the snippet, everything works fine
       +latex-viewers '(skim pdf-tools))
 #+end_src
 *** Texpresso
-#+begin_src elisp
-(add-to-list 'load-path (expand-file-name "~/bin/texpresso-repo/emacs/" user-emacs-directory))
+#+begin_src elisp :tangle no
+(add-to-list 'load-path
+             (expand-file-name "~/bin/texpresso-repo/emacs/" user-emacs-directory))
 (use-package! texpresso)
 #+end_src
 *** Tectonic
@@ -271,6 +373,46 @@ If there are no fields in the snippet, everything works fine
       TeX-process-asynchronous t
       TeX-check-TeX nil
       TeX-engine 'default)
+#+end_src
+** Python
+Use ruff and uv.
+*** Ruff-lsp
+#+begin_src elisp
+(defcustom lsp-ruff-executable "ruff-lsp"
+  "Command to start the Ruff language server."
+  :group 'lsp-python
+  :risky t
+  :type 'file)
+
+(lsp-register-client
+ (make-lsp-client
+  :new-connection (lsp-stdio-connection (lambda () (list lsp-ruff-executable)))
+  :activation-fn (lsp-activate-on "python")
+  :add-on? t
+  :server-id 'ruff))
+#+end_src
+*** Ruff-formater
+#+begin_src elisp
+(after! apheleia
+  (setf (alist-get 'python-mode apheleia-mode-alist)
+        '(ruff-isort ruff))
+  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
+        '(ruff-isort ruff)))
+#+end_src
+*** uv
+#+begin_src elisp :tangle no
+(use-package uv
+  :straight (uv :type git :host github :repo "johannes-mueller/uv.el"))
+#+end_src
+*** ty
+#+begin_src elisp
+(require 'lsp-mode)
+(lsp-register-client
+ (make-lsp-client
+  :new-connection (lsp-stdio-connection '("ty" "server"))
+  :major-modes '(python-mode)
+  :server-id 'ty-lsp))
+(add-hook 'python-mode-hook #'lsp)
 #+end_src
 * Org-mode
 ** General
@@ -397,7 +539,8 @@ highlighting was done, nil otherwise."
   (setq org-auto-align-tags nil
         org-pretty-entities t
         org-agenda-tags-column 0
-        org-agenda-block-separator ?─)
+        org-agenda-block-separator ?─
+        org-hide-leading-stars 't)
   (set-face-attribute 'org-modern-symbol nil :family "Hack Nerd Font"))
 #+end_src
 *** org-visual-visual-outline
@@ -452,8 +595,11 @@ Also look into:
 - [[https://github.com/toshism/org-super-links][toshism/org-super-links]]
 - [[https://github.com/d12frosted/vulpea][d12frosted/vulpea: alternate (faster) backend for org-roam]]
 - some kind of preview/peek for org-roam links.
+
+
 #+begin_src elisp
 (after! org-roam
+  ;; (define-key global-map (kbd "<C-i>") #'org-roam-node-insert)
   (setq org-roam-directory "~/org/roam"
         org-roam-mode-sections (list #'org-roam-backlinks-section
                                      #'org-roam-reflinks-section
@@ -565,8 +711,6 @@ Already loaded by =:tools biblio=.
 ,#+filetags: reference
 ,#+bibliography: ~/arq/${citar-citekey}.bib
 
-# Anotações minhas sobre a referencia, de onde vem, por que é relevante etc...
-
 ,* ${citar-title} [%]
 :PROPERTIES:
 :NOTER-DOCUMENT: ${citar-file}
@@ -575,16 +719,13 @@ Already loaded by =:tools biblio=.
 
 ,#+begin_abstract
 
-,#+end_abstract
-,** Sections
-
-,*** Subsections"
+,#+end_abstract"
                   :target (file+head "ref/${citar-citekey}.org"
                                      "#+Title: ${citar-title}\n")))
   (setq citar-org-roam-capture-template-key "r"
         citar-org-roam-note-title-template "${title}")
 
-  (add-to-list 'citar-org-roam-template-fields '(:citar-year "year"))
+  (add-to-list 'citar-org-roam-template-fields '(:citar-year "date"))
   (add-to-list 'citar-org-roam-template-fields '(:citar-file "file"))
   (add-to-list 'citar-org-roam-template-fields '(:citar-journaltitle "journaltitle" "booktitle")))
 #+end_src
@@ -681,35 +822,37 @@ Some small thing I want to add:
   (setq org-export-with-todo-keywords 'nil
         org-export-with-toc 'nil
         org-export-with-tags 'nil
-        org-export-with-date 'nil
-        org-latex-compiler "xelatex" ;; NOTE will not work on tec's org-mode
-        org-latex-pdf-process '("LC_ALL=en_US.UTF-8 latexmk -f -pdf -%latex -shell-escape -interaction=nonstopmode -output-directory=%o %f")))
+        org-export-with-date 'nil))
 #+end_src
 
-*** Tectonic
+*** Latex pdf process
 #+begin_src elisp
 (after! org
-  (setq org-latex-pdf-process '("tectonic -X compile --outdir=%o -Z shell-escape -Z continue-on-errors %f")))
+  (setq
+   ;; Tectonic
+   org-latex-pdf-process '("tectonic -X compile --outdir=%o -Z shell-escape -Z continue-on-errors %f")
+   ;; Latexmk
+   ;; org-latex-compiler "xelatex" ;; NOTE will not work on tec's org-mode
+   ;; org-latex-pdf-process '("LC_ALL=en_US.UTF-8 latexmk -f -pdf -%latex -shell-escape -interaction=nonstopmode -output-directory=%o %f")
+   ))
 #+end_src
 
 *** Default preamble
+As explained on the help page of ~org-latex-classes~, the preamble is constructed based on
+
+ - [DEFAULT-PACKAGES] :: come from ~org-latex-default-packages-alist~
+ - [PACKAGES] :: comes from ~org-latex-packages-alist~
+ - [EXTRA] :: the stuff from #+LATEX_HEADER(_EXTRA)
+
+If the header (any package added) has ~\usepackage[AUTO]{babel}~, AUTO will be replaced with the language related to the language code specified by ~org-export-default-language~.
+See ~org-latex-guess-babel-language~.
 #+begin_src elisp
 (after! org
   ;; (add-to-list 'org-latex-packages-alist '("" "lmodern" nil))
   (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
-  (setq org-cite-biblatex-options "date=year,backend=biber,bibstyle=ieee,backref=page")
+  (setq org-cite-biblatex-options
+"date=year,backend=biber,backref=page,style=numeric-comp,bibstyle=ieee,url=false,isbn=false,sorting=nty,sortcites=true")
 )
-#+end_src
-*** Additional class
-This does not seems to work, paragraph keeps turning into listings...
-#+begin_src elisp
-(after! ox-latex
-(add-to-list 'org-latex-classes
-                '("thesis" "\\documentclass{report}"
-                ("\\chapter{%s}" . "\\chapter*{%s}")
-                ("\\section{%s}" . "\\section*{%s}")
-                ("\\subsection{%s}" . "\\subsection*{%s}")
-                ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
 #+end_src
 
 *** Export folder
@@ -729,10 +872,10 @@ All exports are placed under a folder called build.
   (setq org-highlight-latex-and-related '(native script entities)))
 #+end_src
 
-The following code is used  by Tecosaur to fix the background color of =org-block-face= added becouse of the =native= in =org-highlight-latex-and-related=.
+The following code is used  by Tecosaur to fix the background color of =org-block-face= added because of the =native= in =org-highlight-latex-and-related=.
 Unfortunately, it also makes the latex code use the non monospaced font.
 
-For now, I will leave it off. The gray brackground for latex code is not bad, unless inline math $x \in \RR$ like this.
+For now, I will leave it off. The gray background for latex code is not bad, unless inline math $x \in \RR$ like this.
 #+begin_src elisp :tangle no
 (require 'org-src)
 (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
@@ -793,7 +936,7 @@ I don't like the curly braces disappearing.
         t))))
 #+end_src
 *** Code highlighting - [[https://github.com/tecosaur/engrave-faces][tecosaur/engrave-faces]]
-Seems to have a substantioal overhead on compile.
+Seems to have a substantial overhead on compile.
 Just check wheter this affects any other pdf that does not contain it.
 #+begin_src elisp :tangle packages.el
 (package! engrave-faces
@@ -817,7 +960,8 @@ CLOSED: [2024-09-15 Sun 17:49]
 #+begin_src elisp :tangle packages.el
 (package! org-special-block-extras)
 #+end_src
-#+begin_src elisp
+#+begin_src elisp :tangle no
+;; There is a bug with org--block--link-display being void.
 (defun my/generate-block (env name label)
   "Generate a block for LaTeX or plain text with optional name and label."
   (if (equal backend 'latex)
@@ -839,6 +983,7 @@ CLOSED: [2024-09-15 Sun 17:49]
       (format "%s: [%s] %s" (capitalize env) name contents))
      (t  ;; Both name and label present
       (format "%s: [%s] %s %s" (capitalize env) name label contents)))))
+
 
 (use-package! org-special-block-extras
   :hook (org-mode . org-special-block-extras-mode)
@@ -863,6 +1008,7 @@ CLOSED: [2024-09-15 Sun 17:49]
                 (my/generate-block "myrule" name label))
 
   (org-link-set-parameters "todo"
+                           :face '(:foreground "red")
                            :export (lambda (path desc backend)
                                      (cond
                                       ((eq backend 'latex)
@@ -870,6 +1016,7 @@ CLOSED: [2024-09-15 Sun 17:49]
                                       ((eq backend 'html)
                                        (format "<span class=\"todo\">%s</span>" path)))))
   (org-link-set-parameters "todoinline"
+                           :face '(:foreground "red")
                            :export (lambda (path desc backend)
                                      (cond
                                       ((eq backend 'latex)
@@ -877,6 +1024,7 @@ CLOSED: [2024-09-15 Sun 17:49]
                                       ((eq backend 'html)
                                        (format "<span class=\"todoinline\">%s</span>" path)))))
   (org-link-set-parameters "missingfigure"
+                           :face '(:foreground "red")
                            :export (lambda (path desc backend)
                                      (cond
                                       ((eq backend 'latex)
@@ -976,6 +1124,12 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
       orig-result)))
 (advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
+** Ignore lsp-warning
+#+begin_src elisp
+(after! (lsp-mode)
+(add-to-list 'warning-suppress-log-types '(lsp-mode))
+(add-to-list 'warning-suppress-types '(lsp-mode)))
+#+end_src
 ** [[https://github.com/svaante/dape][svaante/dape]]
 I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][codelldb]].
 #+begin_src elisp :tangle packages.el
@@ -1032,9 +1186,23 @@ Use =powerthesaurus-lookup-dwim=.
 #+end_src
 * AI
 Would like to also look into [[https://www.youtube.com/watch?v=bsRnh_brggM][Every LLM in Emacs]], [[https://github.com/karthink/gptel][karthink/gptel]] and [[https://github.com/khoj-ai/khoj][khoj-ai/khoj]].
-But perhaps [[https://github.com/freedmand/semantra][freedmand/semantra]] would be also a great alternative.
-An open source alternative can be found in [[https://codeium.com/][Codeium]]
 
+https://github.com/armindarvish/consult-omni
+https://github.com/khoj-ai/khoj - RAG
+
+** GPTel
+Other backends I might use: openrouter.ai, novita.ai, together.ai
+#+begin_src elisp :tangle packages.el
+(package! gptel :recipe (:nonrecursive t))
+#+end_src
+#+begin_src elisp
+(use-package! gptel
+  :config
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response))
+#+end_src
+** Completion
+*** Copilot
 It causes around 0.3s of startup time.
 #+begin_src elisp :tangle packages.el
 (package! copilot
@@ -1050,3 +1218,61 @@ It causes around 0.3s of startup time.
   :config
   (setq copilot-idle-delay 0.2))
 #+end_src
+*** Codeium
+#+begin_src elisp :tangle packages.el
+(package! codeium :recipe (:host github :repo "Exafunction/codeium.el"))
+#+end_src
+#+begin_src elisp :tangle no
+;; we recommend using use-package to organize your init.el
+(use-package codeium
+  :init
+  (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
+  ;; if you want multiple completion backends, use cape (https://github.com/minad/cape):
+  ;; (add-hook 'python-mode-hook
+  ;;     (lambda ()
+  ;;         (setq-local completion-at-point-functions
+  ;;             (list (cape-capf-super #'codeium-completion-at-point #'lsp-completion-at-point)))))
+  ;; an async company-backend is coming soon!
+
+  ;; codeium-completion-at-point is autoloaded, but you can
+  ;; optionally set a timer, which might speed up things as the
+  ;; codeium local language server takes ~0.2s to start up
+  ;; (add-hook 'emacs-startup-hook
+  ;;  (lambda () (run-with-timer 0.1 nil #'codeium-init)))
+
+  ;; :defer t ;; lazy loading, if you want
+  :config
+  (setq use-dialog-box nil) ;; do not use popup boxes
+
+  ;; if you don't want to use customize to save the api-key
+  (setq codeium/metadata/api_key "")
+
+  ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
+  (setq codeium-api-enabled
+        (lambda (api)
+          (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+  ;; you can also set a config for a single buffer like this:
+  ;; (add-hook 'python-mode-hook
+  ;;     (lambda ()
+  ;;         (setq-local codeium/editor_options/tab_size 4)))
+
+  ;; You can overwrite all the codeium configs!
+  ;; for example, we recommend limiting the string sent to codeium for better performance
+  (defun my-codeium/document/text ()
+    (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
+  ;; if you change the text, you should also change the cursor_offset
+  ;; warning: this is measured by UTF-8 encoded bytes
+  (defun my-codeium/document/cursor_offset ()
+    (codeium-utf8-byte-length
+     (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
+  (setq codeium/document/text 'my-codeium/document/text)
+  (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
+#+end_src
+
+** AI pair programming
+[[https://aider.chat/][Aider]] is the standard, can be used through
+*** Aider
+- [[github:MatthewZMD/aidermacs][aidermacs]]
+- [[github:tninja/aider.el]].
+*** Claude-code
+- [[https://github.com/manzaltu/claude-code-ide.el][GitHub - manzaltu/claude-code-ide.el: Claude Code IDE integration for Emacs]]
