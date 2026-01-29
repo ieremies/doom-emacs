@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: pli
+# key: pli
+# condition: t
+# --
+\begin{alignat*}{4}
+(\text{$1})   \quad
+&&\text{min.} \quad && $0 \\
+&&\text{s.t.} \quad &&  & \geq 1      \quad && \forall \\
+&&                  &&  & \geq 1      \quad && \forall \\
+&&                  &&  & \in \{0,1\} \quad && \forall .
+\end{alignat*}}
