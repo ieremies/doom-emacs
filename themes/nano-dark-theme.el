@@ -1,4 +1,4 @@
-;;; doom-nano-dark-theme.el --- dark theme for Doom Emacs based on N Λ N O -*- lexical-binding: t; -*-
+;;; nano-dark-theme.el --- dark theme for Doom Emacs based on N Λ N O -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023  Ronan Arraes Jardim Chagas
 ;;
@@ -9,12 +9,12 @@
 ;; Created          : February 2023
 ;; Keywords         : mode-line, header-line
 ;; Package-Requires : ((emacs "28") (doom-themes "2"))
-;; URL              : https://github.com/ronisbr/doom-nano-themes/
+;; URL              : https://github.com/ronisbr/nano-themes/
 ;; Version          : 0.2.0
 ;;
 ;;; Usage:
 ;; 1. Copy this file to `~/.doom.d/themes/' `~/.config/doom/themes/`.
-;; 2. Load the theme using `(setq doom-theme 'doom-nano-dark)'.
+;; 2. Load the theme using `(setq doom-theme 'nano-dark)'.
 ;;
 ;;; License:
 ;; Permission is hereby granted, free of charge, to any person obtaining
@@ -41,28 +41,29 @@
 
 ;;; Code:
 
-(defgroup doom-nano-dark-theme nil
-  "Options for the `doom-nano-dark' theme."
+(defgroup nano-dark-theme nil
+  "Options for the `nano-dark' theme."
   :group 'doom-themes)
 
-(defcustom doom-nano-dark-theme-highlight-tab-whitespaces nil
+(defcustom nano-dark-theme-highlight-tab-whitespaces nil
   "If non-nil, the tab whitespaces will be highdarked."
-  :group 'doom-nano-dark-theme
+  :group 'nano-dark-theme
   :type 'boolean)
 
-(def-doom-theme other-doom-nano-dark
-  "A dark theme for Doom Emacs based on N Λ N O."
+(def-doom-theme nano-dark
+    "A dark theme for Doom Emacs based on N Λ N O."
 
   (;; Colors defined by N Λ N O theme.
    (nano-foreground '("#ECEFF4" "#ECECEC" "white"))
-   (nano-background '("#2E3440" "#2E2E2E" "black"))
+   (nano-background '("#2E3440" "#2E3440" "black"))
+   ;; background options: 2E3440 282c34
    (nano-highlight  '("#3B4252" "#262626" "brightblack"))
    (nano-subtle     '("#434C5E" "#3F3F3F" "brightblack"))
    (nano-faded      '("#677691" "#5699AF" "cyan"))
-   (nano-salient    '("#81A1C1" "#51AFEF" "brightblue"))
+   (nano-salient    '("#C589E8" "#C589E8" "purple"))
    (nano-strong     '("#FFFFFF" "#FFFFFF" "brightwhite"))
-   (nano-popout     '("#D08770" "#DD8844" "brightred"))
-   (nano-critical   '("#EBCB8B" "#ECBE7B" "yellow"))
+   (nano-popout     '("#29B6F6" "#29B6F6" "yellow"))
+   (nano-critical   '("#FF6F00" "#FF6F00" "brightyellow"))
 
    ;; Required colors for a Doom theme.
    (bg             nano-background)
@@ -157,7 +158,7 @@
    (trailing-whitespace          :background nano-subtle)
 
    (whitespace-tab :background
-                   (if doom-nano-light-theme-highlight-tab-whitespaces
+                   (if nano-light-theme-highlight-tab-whitespaces
                        nano-subtle
                      bg))
 
@@ -248,14 +249,14 @@
 
    ;; === Doom NANO modeline ===================================================
 
-   (doom-nano-modeline-evil-emacs-state-face    :foreground bg :background nano-faded)
-   (doom-nano-modeline-evil-insert-state-face   :foreground bg :background nano-popout)
-   (doom-nano-modeline-evil-motion-state-face   :foreground bg :background nano-faded)
-   (doom-nano-modeline-evil-normal-state-face   :foreground bg :background nano-faded)
-   (doom-nano-modeline-evil-operator-state-face :foreground bg :background nano-faded)
-   (doom-nano-modeline-evil-replace-state-face  :foreground bg :background nano-critical)
-   (doom-nano-modeline-evil-visual-state-face   :foreground bg :background nano-salient)
-   (doom-nano-modeline-inactive-face            :foreground nano-faded :background nano-highlight)
+   (nano-modeline-evil-emacs-state-face    :foreground bg :background nano-faded)
+   (nano-modeline-evil-insert-state-face   :foreground bg :background nano-popout)
+   (nano-modeline-evil-motion-state-face   :foreground bg :background nano-faded)
+   (nano-modeline-evil-normal-state-face   :foreground bg :background nano-faded)
+   (nano-modeline-evil-operator-state-face :foreground bg :background nano-faded)
+   (nano-modeline-evil-replace-state-face  :foreground bg :background nano-critical)
+   (nano-modeline-evil-visual-state-face   :foreground bg :background nano-salient)
+   (nano-modeline-inactive-face            :foreground nano-faded :background nano-highlight)
 
    ;; === Evil mode=============================================================
 
@@ -710,6 +711,6 @@
    (which-key-key-face                   :foreground nano-strong :weight 'bold)
    (which-key-key-group-description-face :foreground nano-salient)))
 
-(provide 'other-doom-nano-dark-theme)
+(provide 'nano-dark-theme)
 
-;;; doom-nano-light-theme.el ends here
+;;; nano-light-theme.el ends here

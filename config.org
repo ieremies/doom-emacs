@@ -16,47 +16,61 @@ This shoudl be in ~early-init.el~, but I am not sure how to do so in doom's emac
 #+end_src
 
 #+begin_src elisp
-;; Set `compile-angel-verbose' to nil to disable compile-angel messages.
-;; (When set to nil, compile-angel won't show which file is being compiled.)
-(setq compile-angel-verbose t)
+(use-package compile-angel
+  :demand t
+  :config
+  ;; Uncomment the line below to compile automatically when an Elisp file is saved
+  (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)
 
-;; Uncomment the line below to compile automatically when an Elisp file is saved
-;; (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)
+  ;; The following directive prevents compile-angel from compiling your init
+  ;; files. If you choose to remove this push to `compile-angel-excluded-files'
+  ;; and compile your pre/post-init files, ensure you understand the
+  ;; implications and thoroughly test your code. For example, if you're using
+  ;; the `use-package' macro, you'll need to explicitly add:
+  ;; (eval-when-compile (require 'use-package))
+  ;; at the top of your init file.
+  (push "/init.el" compile-angel-excluded-files)
+  (push "/early-init.el" compile-angel-excluded-files)
 
-;; A global mode that compiles .el files before they are loaded
-;; using `load' or `require'.
-(compile-angel-on-load-mode)
+  ;; A global mode that compiles .el files before they are loaded
+  ;; using `load' or `require'.
+  (compile-angel-on-load-mode 1))
 #+end_src
 ** General
 #+begin_src elisp
 (after! doom
   (setq user-full-name "Ieremies V. F. Romero"
         user-mail-address "ieremies@gmail.com"
-        doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 13)
+        doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14)
         mixed-pitch-set-height 't
-        doom-theme 'other-doom-nano-light
+        doom-theme 'nano-light
 
         evil-want-fine-undo t
         truncate-string-ellipsis "…"
-        scroll-margin 5
 
         x-underline-at-descent-line 't
         widget-image-enable 'nil ;; no ugly button for checkboxes
         org-hide-emphasis-markers 't ;; Hide org markup
+
+        menu-bar-mode -1
         ))
 
-;;
 (set-face-attribute 'variable-pitch nil
-                        :family "NotoSans Nerd Font"  ;; "Hanken Grotesk" "Helvetica"
-                        :height 140)
+                        ;; :family "NotoSans Nerd Font"
+                        :family "Hanken Grotesk"
+                        ;; :family "SF Pro Text"
+                        ;; :family "Helvetica"
+                        :height 150)
 
 (setq-default delete-by-moving-to-trash t
-              window-combination-resize t)
-
-(setq-default line-spacing 1
+              window-combination-resize t
+              underline-minimum-offset 3
+              x-underline-at-descent-line nil
+              line-spacing 2
               menu-bar-mode -1)
-(setq menu-bar-mode -1)
+
 (window-divider-mode 1)
+(menu-bar-mode -1)
 #+end_src
 
 Some packages invoke the shell and the load of the respective rc file can be considerable.
@@ -64,7 +78,7 @@ Some packages invoke the shell and the load of the respective rc file can be con
 (after! doom
   (setq inhibit-compacting-font-caches t
         display-line-numbers-type nil
-        explicit-shell-file-name "/bin/bash")) 
+        explicit-shell-file-name "/bin/bash"))
 #+end_src
 
 Configuration for MacOS.
@@ -104,38 +118,45 @@ Default window configuration.
   (doom-nano-modeline-mode 1)
   (global-hide-mode-line-mode 1))
 #+end_src
-** Ultra-scroll
+* App
+** rss
+[https://github.com/skeeto/elfeed](https://github.com/skeeto/elfeed)
+[https://github.com/karthink/elfeed-tube](https://github.com/karthink/elfeed-tube?tab=readme-ov-file#setup)
+[https://github.com/remyhonig/elfeed-org](https://github.com/remyhonig/elfeed-org)
+Configurar filtros para coisas de PoE, LoL e demais, bem como algo para tirar vídeos de mais de 2h (lives).
+*** elfeed-tube
 #+begin_src elisp :tangle packages.el
-(package! ultra-scroll
-  :recipe (:host github :repo "jdtsmith/ultra-scroll"))
+(package! elfeed-tube)
 #+end_src
 #+begin_src elisp
-(use-package ultra-scroll
-  :init
-  (setq scroll-conservatively 3 ; or whatever value you prefer, since v0.4
-        scroll-margin 0)        ; important: scroll-margin>0 not yet supported
+(use-package elfeed-tube
+  :after elfeed
+  :demand t
   :config
-  (ultra-scroll-mode 1))
+  (elfeed-tube-setup)
+  :bind (:map elfeed-show-mode-map
+         ("F" . elfeed-tube-fetch)
+         ([remap save-buffer] . elfeed-tube-save)
+         :map elfeed-search-mode-map
+         ("F" . elfeed-tube-fetch)
+         ([remap save-buffer] . elfeed-tube-save)))
 #+end_src
 * Checkers
-** spell - [[https://github.com/minad/jinx][minad/jinx]]
+** Spell
+*** Jinx
 #+begin_src elisp :tangle packages.el
 (package! jinx
   :recipe (:host github :repo "minad/jinx"))
 #+end_src
 #+begin_src elisp
 (use-package! jinx
-  ;; https://github.com/minad/jinx/discussions/160#discussioncomment-9111820
-  :init
-  (setenv "PKG_CONFIG_PATH"
-          (concat "/opt/homebrew/opt/glib/lib/pkgconfig/:" (getenv "PKG_CONFIG_PATH")))
-  :hook (org-mode . jinx-mode)
+  :hook
+  (org-mode . jinx-mode)
+  (typst-ts-mode . jinx-mode)
   :config
-  (setq ;; jinx-languages "pt_BR en_US"
-        jinx-languages "en_US"
+  (setq jinx-languages "en_US"
         jinx-delay 1.0)
-  (nconc (cadr jinx-exclude-faces) '(org-ref-ref-face)) ;; faces to not spell check
-  (keymap-global-set "C-f" #'jinx-correct))
+  (nconc (cadr jinx-exclude-faces) '(org-ref-ref-face)))
 
 (after! vertico-multiform
   (add-to-list 'vertico-multiform-categories
@@ -163,63 +184,11 @@ The misspelled word is taken from OVERLAY.  WORD is the corrected word."
 
   (advice-add 'jinx--correct-replace :before #'jinx--add-to-abbrev))
 #+end_src
-
 ** Grammar
-*** lsp-ltex
-#+begin_src elisp :tangle packages.el
-(package! lsp-ltex)
-#+end_src
-#+begin_src elisp 
-(use-package lsp-ltex
-  :init (setq lsp-ltex-version "16.0.0")
-  :config
-  (setq lsp-ltex-additional-rules-enable-picky-rules 't
-        ;; lsp-ltex-completion-enabled 'nil BUG
-        lsp-ltex-check-frequency "save"))
-#+end_src
-*** Grammarly
-#+begin_src elisp :tangle packages.el
-(package! flycheck-grammarly)
-#+end_src
-#+begin_src elisp :tangle no
-(use-package! flycheck-grammarly
-  :after flycheck
-  :init (flycheck-grammarly-setup)
-  :config (setq flycheck-grammarly-check-time 2.0))
-#+end_src
-
-#+begin_src elisp :tangle packages.el
-(package! lsp-grammarly)
-#+end_src
-#+begin_src elisp :tangle no
-(use-package lsp-grammarly
-  :ensure t
-  :hook (text-mode . (lambda ()
-                       (require 'lsp-grammarly)
-                       (lsp))))  ; or lsp-deferred
-#+end_src
-
+I give up... just use VSCode when you are done...
 * Completion
-** Hippie
-This is something I should use more.
-#+begin_src elisp
-(global-set-key [remap dabbrev-expand] #'hippie-expand)
-(setq hippie-expand-try-functions-list
-      '(try-expand-list
-        try-expand-dabbrev-visible
-        try-expand-dabbrev
-        try-expand-all-abbrevs
-        try-expand-dabbrev-all-buffers
-        try-complete-file-name-partially
-        try-complete-file-name
-        try-expand-dabbrev-from-kill
-        try-expand-whole-kill
-        try-expand-line
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol))
-#+end_src
 ** corfu
-#+begin_src elisp
+#+begin_src emacs-lisp :tangle yes
 (after! corfu
   (setq corfu-auto-delay 0.2
         text-mode-ispell-word-completion nil
@@ -233,59 +202,8 @@ This is something I should use more.
 
 I have twice ran into the problem of "no registered capabilities" for an LSP.
 It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it all.
-** Cape
-#+begin_src elisp :tangle packages.el
-(package! cape)
-#+end_src
-#+begin_src elisp
-(use-package cape
-  :init
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-keyword)
-  (add-to-list 'completion-at-point-functions #'cape-abbrev)
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev))
-#+end_src
-** Vertico
-https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-command-or-completion-category
-#+begin_src elisp
-(after! (vertico vertico-posframe)
-  (setq vertico-posframe-parameters
-        '((left-fringe . 8)
-          (right-fringe . 8))))
-#+end_src
-** Consult
-#+begin_src elisp :tangle no
-(consult-customize
- consult-line
- :add-history (seq-some #'thing-at-point '(region symbol)))
 
-(defalias 'consult-line-thing-at-point 'consult-line)
-
-(consult-customize
- consult-line-thing-at-point
- :initial (thing-at-point 'symbol))
-#+end_src
-** Flyover
-#+begin_src elisp :tangle packages.el
-(package! flyover
-  :recipe (:host github :repo "konrad1977/flyover"))
-#+end_src
-#+begin_src elisp :tangle no
-(use-package! flyover
-    :after flycheck
-    :hook (flycheck-mode . flyover-mode)
-    :config
-    ;; Use theme colors for error/warning/info faces
-    (setq flyover-use-theme-colors t)
-    ;; Adjust background lightness (lower values = darker)
-    (setq flyover-background-lightness 45)
-    ;; Make icon background darker than foreground
-    (setq flyover-percent-darker 40)
-    (setq flyover-text-tint 'lighter) ;; or 'darker or nil
-    ;; "Percentage to lighten or darken the text when tinting is enabled."
-    (setq flyover-text-tint-percent 50))
-#+end_src
-** Hotfuzz+orderless
+** hotfuzz+orderless
 #+begin_src elisp :tangle packages.el
 (package! hotfuzz
   :recipe (:host github :repo "axelf4/hotfuzz"))
@@ -308,8 +226,9 @@ https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-comman
                   "Filter first component with Hotfuzz, rest with Orderless."))
   (put 'hotfuzz+orderless 'completion--adjust-metadata #'hotfuzz--adjust-metadata))
 #+end_src
+** vertico
 * Editor
-** evil
+** Evil
 #+begin_src elisp
 (after! evil
   (setq evil-ex-substitute-global t
@@ -322,48 +241,76 @@ https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-comman
   (advice-add 'evil-ex-search-previous :after
               (lambda (&rest x) (evil-scroll-line-to-center (line-number-at-pos)))))
 #+end_src
-** Snippets
-Disable DOOM's snippets.
-#+begin_src elisp :tangle packages.el
-(package! doom-snippets :ignore t)
-#+end_src
-
 * Emacs
-** Dired
-#+begin_src elisp
+** dired +dirvish
+#+begin_src emacs-lisp :tangle yes
 (after! dirvish
   (dirvish-side-follow-mode)
-  (setq dirvish-attributes '(file-size nerd-icons git-msg subtree-state)
-        dirvish-side-width 25))
+  (setq dirvish-side-width 25))
+#+end_src
+*** FIXME In dirvish
+When pressing ~alt~, it triggers ~dirvish-subtree-toggle~, the selection buffer does appear, the cursor previews on the background, but, after selecting and pressing ~RET~, nothing happens and the cursor comes
+** buffer-terminator
+#+begin_src emacs-lisp :tangle packages.el
+(package! buffer-terminator)
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package buffer-terminator
+  :custom
+  (buffer-terminator-verbose nil)
+
+  ;; Set the inactivity timeout (in seconds) after which buffers are considered
+  ;; inactive (default is 30 minutes):
+  (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+
+  ;; Define how frequently the cleanup process should run (default is every 10
+  ;; minutes):
+  (buffer-terminator-interval (* 10 60)) ; 10 minutes
+
+  :config
+  (buffer-terminator-mode 1))
 #+end_src
 * Languages
-** clangd for C/C++
+** CC
 #+begin_src elisp
-(after! lsp-clangd
-  (setq lsp-clients-clangd-args
-        '("-j=3"
-          "--background-index"
-          "--clang-tidy"
-          "--completion-style=detailed"
-          "--header-insertion=never"
-          "--header-insertion-decorators=0"))
+(setq my/clangd-args
+      '("-j=3"
+        "--background-index"
+        "--clang-tidy"
+        "--completion-style=detailed"
+        "--header-insertion=never"
+        "--header-insertion-decorators=0"))
+
+(after! (lsp-mode lsp-clangd)
+  (setq lsp-clients-clangd-args my/clangd-args)
   (set-lsp-priority! 'clangd 2))
+
+(after! eglot
+  (set-eglot-client! 'cc-mode (append '("clangd") my/clangd-args)))
 #+end_src
-** Latex
+
+# TODO: ff-find-other-file
+** Python
+*** TODO Ruff
+I am not sure what is the problem here: either the global python eviroment or the lack of a .venv in each project...
 #+begin_src elisp
-(setq TeX-save-query nil
-      TeX-show-compilation t
-      TeX-command-extra-options "-shell-escape"
-      +latex-viewers '(skim pdf-tools))
+;; (after! eglot
+;;   (add-hook 'python-mode-hook 'eglot-ensure)
+;;   (with-eval-after-load 'eglot
+;;     (add-to-list 'eglot-server-programs
+;;                  '(python-mode . ("ruff" "server")))
+;;     (add-hook 'after-save-hook 'eglot-format)))
+
+;; Replace default (black) to use ruff for sorting import and formatting.
+(after! apheleia
+  (setf (alist-get 'python-mode apheleia-mode-alist)
+        '(ruff-isort ruff))
+  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
+        '(ruff-isort ruff)))
 #+end_src
-*** Texpresso
-#+begin_src elisp :tangle no
-(add-to-list 'load-path
-             (expand-file-name "~/bin/texpresso-repo/emacs/" user-emacs-directory))
-(use-package! texpresso)
-#+end_src
-*** Tectonic
-#+begin_src elisp
+** LaTeX
+#+begin_src emacs-lisp :tangle yes
+(after! tex
 (setq TeX-engine-alist '((default
                           "Tectonic"
                           "tectonic -X compile -f plain %T"
@@ -373,47 +320,13 @@ Disable DOOM's snippets.
       TeX-process-asynchronous t
       TeX-check-TeX nil
       TeX-engine 'default)
-#+end_src
-** Python
-Use ruff and uv.
-*** Ruff-lsp
-#+begin_src elisp
-(defcustom lsp-ruff-executable "ruff-lsp"
-  "Command to start the Ruff language server."
-  :group 'lsp-python
-  :risky t
-  :type 'file)
 
-(lsp-register-client
- (make-lsp-client
-  :new-connection (lsp-stdio-connection (lambda () (list lsp-ruff-executable)))
-  :activation-fn (lsp-activate-on "python")
-  :add-on? t
-  :server-id 'ruff))
+(let ((tex-list (assoc "TeX" TeX-command-list))
+      (latex-list (assoc "LaTeX" TeX-command-list)))
+  (setf (cadr tex-list) "%(tex)"
+        (cadr latex-list) "%l")))
 #+end_src
-*** Ruff-formater
-#+begin_src elisp
-(after! apheleia
-  (setf (alist-get 'python-mode apheleia-mode-alist)
-        '(ruff-isort ruff))
-  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
-        '(ruff-isort ruff)))
-#+end_src
-*** uv
-#+begin_src elisp :tangle no
-(use-package uv
-  :straight (uv :type git :host github :repo "johannes-mueller/uv.el"))
-#+end_src
-*** ty
-#+begin_src elisp
-(require 'lsp-mode)
-(lsp-register-client
- (make-lsp-client
-  :new-connection (lsp-stdio-connection '("ty" "server"))
-  :major-modes '(python-mode)
-  :server-id 'ty-lsp))
-(add-hook 'python-mode-hook #'lsp)
-#+end_src
+
 * Org-mode
 ** General
 #+begin_src elisp
@@ -432,17 +345,27 @@ Use ruff and uv.
                 :desc "Org capture"    "x"#'org-capture
                 :desc "Scratch buffer" "X"#'doom/open-scratch-buffer)
 
-  (after! hl-todo
-    (add-hook 'org-mode-hook (lambda () (hl-todo-mode 1))))
+  ;; (after! hl-todo
+  ;;   (add-hook 'org-mode-hook (lambda () (hl-todo-mode 1))))
   (add-hook 'org-mode-hook (lambda () (org-num-mode 1))))
 #+end_src
 *** Mixed pitch
+The =mixed-pitch-mode= reverts back to the default =fixed-pitch :weight= value when a face is in =mixed-pitch-fixed-pitch-faces=.
+#+begin_src diff :tangle no
+-                              face :family fix-pitch :height fix-height :weight fix-weight)
+-                           (face-remap-add-relative face :family fix-pitch :weight fix-weight))))
++                              face :family fix-pitch :height fix-height)
++                           (face-remap-add-relative face :family fix-pitch))))
+#+end_src
 #+begin_src elisp :tangle packages.el
 (package! mixed-pitch)
 #+end_src
 #+begin_src elisp
 (use-package! mixed-pitch
-  :hook (org-mode . mixed-pitch-mode))
+  :hook
+  (org-mode . mixed-pitch-mode)
+  (typst-ts-mode . mixed-pitch-mode)
+  )
 #+end_src
 
 *** org-appear
@@ -456,249 +379,48 @@ Toggle the appearance of hidden elements in org-mode.
   :hook (org-mode . org-appear-mode)
   :config
   (setq org-hide-emphasis-markers 't
-        org-appear-autoemphasis t
-        org-appear-autolinks t
-        org-appear-autosubmarkers t
-        org-appear-inside-latex t)
+        org-appear-autoemphasis   't
+        org-appear-autolinks      't
+        org-appear-autosubmarkers 't
+        org-appear-inside-latex   't)
   ;; for proper first-time setup, `org-appear--set-elements'
   ;; needs to be run after other hooks have acted.
   (run-at-time nil nil #'org-appear--set-elements))
-
-#+end_src
-
-I also want to consider $ math inline delimiters as emphasis markers to be hidden.
-#+begin_src elisp
-(after! org
-  (defun org-do-latex-and-related (limit)
-    "Highlight LaTeX snippets and environments, entities and sub/superscript.
-Stop at first highlighted object, if any.  Return t if some
-highlighting was done, nil otherwise."
-    (when (org-string-nw-p org-latex-and-related-regexp)
-      (let ((latex-prefix-re (rx (or "$" "\\(" "\\[")))
-	    (blank-line-re (rx (and "\n" (zero-or-more (or " " "\t")) "\n"))))
-        (catch 'found
-	  (while (and (< (point) limit)
-		      (re-search-forward org-latex-and-related-regexp nil t))
-	    (cond
-             ((>= (match-beginning 0) limit)
-	      (throw 'found nil))
-	     ((cl-some (lambda (f)
-		         (memq f '(org-code org-verbatim underline
-				   org-special-keyword)))
-		       (save-excursion
-		         (goto-char (1+ (match-beginning 0)))
-		         (face-at-point nil t))))
-	     ;; Try to limit false positives.  In this case, ignore
-	     ;; $$...$$, \(...\), and \[...\] LaTeX constructs if they
-	     ;; contain an empty line.
-	     ((save-excursion
-	        (goto-char (match-beginning 0))
-	        (and (looking-at-p latex-prefix-re)
-		     (save-match-data
-		       (re-search-forward blank-line-re (1- (match-end 0)) t)))))
-	     (t
-	      (let* ((offset (if (memq (char-after (1+ (match-beginning 0)))
-				       '(?_ ?^))
-			         1
-			       0))
-		     (start (+ offset (match-beginning 0)))
-		     (end (match-end 0)))
-	        (if (memq 'native org-highlight-latex-and-related)
-		    (org-src-font-lock-fontify-block "latex" start end)
-		  (font-lock-prepend-text-property start end
-						   'face 'org-latex-and-related))
-
-	        ;;<<<<<<<<<<<<<<<<<<<<<
-	        ;; my code starts here
-	        (when (and org-hide-emphasis-markers (< (+ start 4) end))
-		  (cond ((member (buffer-substring start (+ start 2)) '("$$" "\\("))
-		         (add-text-properties start (+ start 2) '(invisible org-link)))
-		        ((string= (buffer-substring (1+ start) (+ start 2)) "$")
-		         (add-text-properties (1+ start) (+ start 2) '(invisible org-link))))
-		  (cond ((member (buffer-substring end (- end 2)) '("$$" "\\)"))
-		         (add-text-properties end (- end 2) '(invisible org-link)))
-		        ((string= (buffer-substring (1- end) (- end 2)) "$")
-		         (add-text-properties (1- end) (- end 2) '(invisible org-link)))))
-	        ;; my code ends here
-	        ;;>>>>>>>>>>>>>>>>>>>>>
-
-	        (add-text-properties (+ offset (match-beginning 0)) (match-end 0)
-				     '(font-lock-multiline t))
-	        (throw 'found t)))))
-	  nil))))
-  )
 #+end_src
 *** org-modern
-#+begin_src elisp :tangle packages.el
-(package! org-modern)
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-modern
+  :recipe (:host github :repo "minad/org-modern"))
+(package! org-modern-indent
+  :recipe (:host github :repo "jdtsmith/org-modern-indent"))
 #+end_src
-#+begin_src elisp
-(use-package! org-modern
-  :hook (org-mode . org-modern-mode)
-  :config
-  (setq org-auto-align-tags nil
-        org-pretty-entities t
-        org-agenda-tags-column 0
-        org-agenda-block-separator ?─
-        org-hide-leading-stars 't)
-  (set-face-attribute 'org-modern-symbol nil :family "Hack Nerd Font"))
-#+end_src
-*** org-visual-visual-outline
-#+begin_src elisp :tangle packages.el
-(package! org-visual-visual-outline
-  :recipe (:host github :repo "legalnonsense/org-visual-outline"))
-#+end_src
-#+begin_src elisp
-(use-package! org-visual-indent
-  :hook (org-mode . org-visual-indent-mode)
-  :config
-  (set-face-attribute 'org-visual-indent-pipe-face nil
-                      :foreground "#ECEFF1"
-                      :background "#ECEFF1")
-  (set-face-attribute 'org-visual-indent-blank-pipe-face nil
-                      :foreground "#FFFFFF"
-                      :background "#FFFFFF"))
-#+end_src
-*** WAIT Tecosaur fork
-Cool fork with good latex-preview support [[https://abode.karthinks.com/org-latex-preview/][org-latex-preview]].
 
-*** TODO [[https://github.com/nobiot/org-transclusion][nobiot/org-transclusion]]
-*** TODO [[https://github.com/wdavew/org-excalidraw][wdavew/org-excalidraw]]
-*** TODO [[https://github.com/tecosaur/orgdiff][tecosaur/orgdiff]]
-#+begin_src elisp :tangle no
-(package! orgdiff
-  :recipe (:host github :repo "tecosaur/orgdiff"))
-#+end_src
-#+begin_src elisp :tangle no
-(use-package! orgdiff
-  :defer t
+#+begin_src emacs-lisp :tangle yes
+(use-package org-modern
+  :custom
+  (org-modern-hide-stars nil)
+  (org-modern-table nil)
+  (org-modern-todo nil)
+  (org-modern-fold-stars '(("▸" . "▾")))
+  (org-modern-list '((?* . "•") (?+ . "‣")))
+  (org-auto-align-tags nil)
+  (org-pretty-entities t)
+  :hook
+  (org-mode . org-modern-mode)
+  (org-agenda-finalize . org-modern-agenda))
+
+(use-package org-modern-indent
   :config
-  (defun +orgdiff-nicer-change-colours ()
-    (goto-char (point-min))
-    ;; Set red/blue based on whether chameleon is being used
-    (if (search-forward "%% make document follow Emacs theme" nil t)
-        (setq red  (substring (doom-blend 'red 'fg 0.8) 1)
-              blue (substring (doom-blend 'blue 'teal 0.6) 1))
-      (setq red  "c82829"
-            blue "00618a"))
-    (when (and (search-forward "%DIF PREAMBLE EXTENSION ADDED BY LATEXDIFF" nil t)
-               (search-forward "\\RequirePackage{color}" nil t))
-      (when (re-search-forward "definecolor{red}{rgb}{1,0,0}" (cdr (bounds-of-thing-at-point 'line)) t)
-        (replace-match (format "definecolor{red}{HTML}{%s}" red)))
-      (when (re-search-forward "definecolor{blue}{rgb}{0,0,1}" (cdr (bounds-of-thing-at-point 'line)) t)
-        (replace-match (format "definecolor{blue}{HTML}{%s}" blue)))))
-  (add-to-list 'orgdiff-latexdiff-postprocess-hooks #'+orgdiff-nicer-change-colours))
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 #+end_src
-** Roam
-Also look into:
-- [[https://github.com/meedstrom/org-node?tab=readme-ov-file][meedstrom/org-node]]
-- [[https://github.com/toshism/org-super-links][toshism/org-super-links]]
-- [[https://github.com/d12frosted/vulpea][d12frosted/vulpea: alternate (faster) backend for org-roam]]
-- some kind of preview/peek for org-roam links.
-
-
-#+begin_src elisp
+** Annotation
+*** org-roam
+#+begin_src emacs-lisp :tangle yes
 (after! org-roam
-  ;; (define-key global-map (kbd "<C-i>") #'org-roam-node-insert)
-  (setq org-roam-directory "~/org/roam"
-        org-roam-mode-sections (list #'org-roam-backlinks-section
-                                     #'org-roam-reflinks-section
-                                     #'org-roam-unlinked-references-section)
-        completion-ignore-case t
-        org-roam-capture-templates  '(("d" "default" plain "%?"
-                                       :if-new (file+head "${slug}.org"
-                                                          "#+title: ${title}\n#+created: %U\n\n%?")
-                                       :unnarrowed t))))
+  (setq org-roam-directory "~/org/"))
 #+end_src
-*** consult-org-roam
-#+begin_src elisp :tangle packages.el
-(package! consult-org-roam)
-#+end_src
-#+begin_src elisp
-(use-package consult-org-roam
-   :after org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor mode
-   (consult-org-roam-mode 1)
-   :custom
-   ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   ;; Configure a custom narrow key for `consult-buffer'
-   (consult-org-roam-buffer-narrow-key ?r)
-   ;; Display org-roam buffers right after non-org-roam buffers
-   ;; in consult-buffer (and not down at the bottom)
-   (consult-org-roam-buffer-after-buffers t)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-forward-links
-    :preview-key "M-.")
-   :bind
-   ;; Define some convenient keybindings as an addition
-   ("C-c n e" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n l" . consult-org-roam-forward-links)
-   ("C-c n r" . consult-org-roam-search))
-#+end_src
-*** KILL org-roam-ui
-#+begin_src elisp :tangle no
-(package! websocket)
-(package! org-roam-ui)
-#+end_src
-#+begin_src elisp :tangle no
-(use-package! websocket
-    :after org-roam)
-
-(use-package! org-roam-ui
-    :after org-roam
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t))
-#+end_src
-*** KILL org-roam-timestamp
-#+begin_src elisp :tangle no
-(package! org-roam-timestamps)
-#+end_src
-#+begin_src elisp :tangle no
-(use-package! org-roam-timestamps
-  :after org-roam
-  :config (org-roam-timestamps-mode))
-#+end_src
-
-** Citations and references
-*** org-cite
-#+begin_src elisp
-(after! oc                        ;;export processor bib-style cite-ctyle
-  (setq org-cite-export-processors '((latex biblatex "numeric,bibstyle=ieee" "text")
-                                     (t csl))))
-#+end_src
-*** citar
-Already loaded by =:tools biblio=.
-#+begin_src emacs-lisp
-(after! citar
-  (setq org-cite-global-bibliography '("/Users/ieremies/arq/bib.bib")
-        citar-bibliography           '("/Users/ieremies/arq/bib.bib")
-        citar-library-paths          '("/Users/ieremies/arq/files/")
-        citar-notes-paths            '("/Users/ieremies/org/roam/ref/")
-        citar-bibliography org-cite-global-bibliography
-
-        citar-symbols ;; symbols on the left side of the popup
-        `((file ,(nerd-icons-faicon "nf-fa-file_o" :face 'nerd-icons-green :v-adjust -0.1) . " ")
-          (note ,(nerd-icons-octicon "nf-oct-note" :face 'nerd-icons-blue :v-adjust -0.3) . " ")
-          (link ,(nerd-icons-octicon "nf-oct-link" :face 'nerd-icons-orange :v-adjust 0.01) . " ")))
-
-  (map! :mode org-mode
-        :desc "Insert a citation"
-        :nvi "C-a" #'org-cite-insert))
-#+end_src
-
-**** citar-org-roam
-#+begin_src elisp :tangle packages.el
-(unpin! citar-org-roam)
-#+end_src
-#+begin_src elisp
+*** citar-org-roam
+#+begin_src elisp :tangle yes
 (use-package citar-org-roam
   :after (citar org-roam)
   :config
@@ -708,18 +430,7 @@ Already loaded by =:tools biblio=.
                   ;; BUG Fix file name
 "#+Subtitle: ${citar-journaltitle} - ${citar-year}
 ,#+Author: ${citar-author}
-,#+filetags: reference
-,#+bibliography: ~/arq/${citar-citekey}.bib
-
-,* ${citar-title} [%]
-:PROPERTIES:
-:NOTER-DOCUMENT: ${citar-file}
-:NOTER-PAGE:
-:END:
-
-,#+begin_abstract
-
-,#+end_abstract"
+,#+filetags: reference"
                   :target (file+head "ref/${citar-citekey}.org"
                                      "#+Title: ${citar-title}\n")))
   (setq citar-org-roam-capture-template-key "r"
@@ -729,74 +440,54 @@ Already loaded by =:tools biblio=.
   (add-to-list 'citar-org-roam-template-fields '(:citar-file "file"))
   (add-to-list 'citar-org-roam-template-fields '(:citar-journaltitle "journaltitle" "booktitle")))
 #+end_src
+** Citations and references
+*** org-cite
+#+begin_src elisp
+(after! oc
+  (setq org-cite-biblatex-options
+        (string-join
+         '("date=year"
+           "backend=biber"
+           "url=false"
+           "isbn=false"
+           "sortcites=true"
+           "sorting=nty")
+         ",")
+        org-cite-export-processors
+        `((latex . (biblatex "style=numeric-comp,bibstyle=ieee" "auto"))
+          (t . csl))))
+#+end_src
+
+*** citar
+Already loaded by =:tools biblio=.
+#+begin_src emacs-lisp
+(after! citar
+  (setq org-cite-global-bibliography '("/Users/ieremies/arq/bib.bib")
+        citar-bibliography           '("/Users/ieremies/arq/bib.bib")
+        citar-library-paths          '("/Users/ieremies/arq/files/")
+        citar-notes-paths            '("/Users/ieremies/org/ref/")
+        citar-bibliography           org-cite-global-bibliography)
+
+  (map! :mode org-mode
+        :desc "Insert a citation"
+        :nvi "C-a" #'org-cite-insert))
+#+end_src
+
 *** oc-csl-activate
-[[https://tecosaur.github.io/emacs-config/config.html#citation][Tecosaur]] says "there’s currently a potential for undesirable buffer modifications, so we’ll put all the activation code behind a function we can call when we want it."
 #+begin_src elisp :tangle packages.el
 (package! oc-csl-activate
   :recipe (:host github :repo "andras-simonyi/org-cite-csl-activate"))
 #+end_src
 #+begin_src elisp
 (use-package! oc-csl-activate
-  :after (oc citar)
+  :after oc
   :hook (org-mode . cursor-sensor-mode)
   :config
   (setq org-cite-activate-processor 'csl-activate
         org-cite-csl-activate-use-citar-cache t
         org-cite-csl-activate-use-document-style t))
-#+end_src
 
-*** Auto activating snippets
-#+begin_src elisp :tangle packages.el
-(package! aas)
-#+end_src
-#+begin_src emacs-lisp
-(use-package! aas
-  :hook (org-mode . aas-activate-for-major-mode)
-  :config
-  (aas-set-snippets 'org-mode
-   "\\cite" #'org-cite-insert
-   "\\ref" #'org-ref-insert-ref-link
-
-   ;; Special blocks
-   "#+theo" '(yas "#+begin_theo\n$0\n#+end_theo")
-   "#+proof" '(yas "#+begin_proof\n$0\n#+end_proof")
-   "#+defi" '(yas "#+begin_defi\n$0\n#+end_defi")
-   "#+coro" '(yas "#+begin_coro\n$0\n#+end_coro")
-   "#+remark" '(yas "#+begin_remark\n$0\n#+end_remark")
-   "#+lemma" '(yas "#+begin_lemma\n$0\n#+end_lemma")
-   "#+quote" '(yas "#+begin_quote\n$0\n#+end_quote")
-   "#+abs" '(yas "#+begin_abstract\n$0\n#+end_abstract")
-   "#+src" '(yas "#+begin_src $0\n#+end_src")
-
-   ;; TODO some of those is math-only
-   "barx" "\bar{x}"
-   "baru" "\bar{u}"
-   " sse " " se, e somente se, "
-   " iff " " if, and only if, "
-   ;; beamer
-   "beamerpause" "#+beamer: \\pause"
-   "beamerlist" "#+attr_beamer: :overlay <+->"
-   ;; math variables during text
-   " v " " $v$ "
-   " x " " $x$ "
-   " y " " $y$ "
-   " z " " $z$ "
-   " w " " $w$ "
-   " m " " $m$ "
-   " n " " $n$ "
-   )
-  )
-#+end_src
-
-
-**** Latex auto activating snippets
-#+begin_src emacs-lisp :tangle packages.el
-(package! laas
-  :recipe (:host github :repo "tecosaur/LaTeX-auto-activating-snippets"))
-#+end_src
-#+begin_src emacs-lisp
-(use-package laas
-  :hook (org-mode . laas-mode))
+(setq org-cite-activate-processor 'csl-activate)
 #+end_src
 
 *** org-ref (only ref links)
@@ -815,26 +506,16 @@ Already loaded by =:tools biblio=.
 ** Latex
 See [[https://tecosaur.github.io/emacs-config/config.html#latex-export][Tecosaur's config]].
 Some small thing I want to add:
-- automatically add the ~ before citations, references and inline math.
+- [ ] automatically add the ~ before citations, references and inline math.
 *** Org-mode config
 #+begin_src elisp
 (after! org
   (setq org-export-with-todo-keywords 'nil
-        org-export-with-toc 'nil
-        org-export-with-tags 'nil
-        org-export-with-date 'nil))
-#+end_src
-
-*** Latex pdf process
-#+begin_src elisp
-(after! org
-  (setq
-   ;; Tectonic
-   org-latex-pdf-process '("tectonic -X compile --outdir=%o -Z shell-escape -Z continue-on-errors %f")
-   ;; Latexmk
-   ;; org-latex-compiler "xelatex" ;; NOTE will not work on tec's org-mode
-   ;; org-latex-pdf-process '("LC_ALL=en_US.UTF-8 latexmk -f -pdf -%latex -shell-escape -interaction=nonstopmode -output-directory=%o %f")
-   ))
+        org-export-with-toc           'nil
+        org-export-with-tags          'nil
+        org-export-with-date          'nil
+        org-latex-pdf-process '("tectonic -X compile --outdir=%o -Z shell-escape -Z continue-on-errors %f")
+  ))
 #+end_src
 
 *** Default preamble
@@ -848,11 +529,7 @@ If the header (any package added) has ~\usepackage[AUTO]{babel}~, AUTO will be r
 See ~org-latex-guess-babel-language~.
 #+begin_src elisp
 (after! org
-  ;; (add-to-list 'org-latex-packages-alist '("" "lmodern" nil))
-  (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t))
-  (setq org-cite-biblatex-options
-"date=year,backend=biber,backref=page,style=numeric-comp,bibstyle=ieee,url=false,isbn=false,sorting=nty,sortcites=true")
-)
+  (add-to-list 'org-latex-packages-alist '("" "/Users/ieremies/arq/tex/myheader" t)))
 #+end_src
 
 *** Export folder
@@ -872,15 +549,6 @@ All exports are placed under a folder called build.
   (setq org-highlight-latex-and-related '(native script entities)))
 #+end_src
 
-The following code is used  by Tecosaur to fix the background color of =org-block-face= added because of the =native= in =org-highlight-latex-and-related=.
-Unfortunately, it also makes the latex code use the non monospaced font.
-
-For now, I will leave it off. The gray background for latex code is not bad, unless inline math $x \in \RR$ like this.
-#+begin_src elisp :tangle no
-(require 'org-src)
-(add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
-#+end_src
-
 *** Smart quotes
 Quotes for pt-br are missing.
 #+begin_src elisp
@@ -892,48 +560,6 @@ Quotes for pt-br are missing.
                  (secondary-opening :utf-8 "‘" :html "&lsquo;" :latex "`" :texinfo "`")
                  (secondary-closing :utf-8 "’" :html "&rsquo;" :latex "'" :texinfo "'")
                  (apostrophe :utf-8 "’" :html "&rsquo;"))))
-#+end_src
-*** Sub/superscript
-I don't like the curly braces disappearing.
-#+begin_src elisp
-(after! org
-  (defun org-raise-scripts (limit)
-    "Add raise properties to sub/superscripts."
-    (when (and org-pretty-entities org-pretty-entities-include-sub-superscripts
-               (re-search-forward
-                (if (eq org-use-sub-superscripts t)
-                    org-match-substring-regexp
-                  org-match-substring-with-braces-regexp)
-                limit t))
-      (let* ((pos (point)) table-p comment-p
-             (mpos (match-beginning 3))
-             (emph-p (get-text-property mpos 'org-emphasis))
-             (link-p (get-text-property mpos 'mouse-face))
-             (keyw-p (eq 'org-special-keyword (get-text-property mpos 'face))))
-        (goto-char (line-beginning-position))
-        (setq table-p (looking-at-p org-table-dataline-regexp)
-              comment-p (looking-at-p "^[ \t]*#[ +]"))
-        (goto-char pos)
-        ;; Handle a_b^c
-        (when (member (char-after) '(?_ ?^)) (goto-char (1- pos)))
-        (unless (or comment-p emph-p link-p keyw-p)
-          (put-text-property (match-beginning 3) (match-end 0)
-                             'display
-                             (if (equal (char-after (match-beginning 2)) ?^)
-                                 (nth (if table-p 3 1) org-script-display)
-                               (nth (if table-p 2 0) org-script-display)))
-          (put-text-property (match-beginning 2) (match-end 3)
-                             'org-emphasis t)
-          ;; (add-text-properties (match-beginning 2) (match-end 2)
-          ;;              (list 'invisible t))
-          ;; (when (and (eq (char-after (match-beginning 3)) ?{)
-          ;;        (eq (char-before (match-end 3)) ?}))
-          ;;   (add-text-properties (match-beginning 3) (1+ (match-beginning 3))
-          ;;                (list 'invisible t))
-          ;;   (add-text-properties (1- (match-end 3)) (match-end 3)
-          ;;                (list 'invisible t)))
-          )
-        t))))
 #+end_src
 *** Code highlighting - [[https://github.com/tecosaur/engrave-faces][tecosaur/engrave-faces]]
 Seems to have a substantial overhead on compile.
@@ -955,182 +581,42 @@ By doing a face-font-rescale, for some reason, the first two levels of org-moder
 #+begin_src elisp
 (push `("Apple Symbols" . ,(/ 19.0 13.0)) face-font-rescale-alist)
 #+end_src
-*** org-special-blocks-extra
-CLOSED: [2024-09-15 Sun 17:49]
-#+begin_src elisp :tangle packages.el
-(package! org-special-block-extras)
-#+end_src
-#+begin_src elisp :tangle no
-;; There is a bug with org--block--link-display being void.
-(defun my/generate-block (env name label)
-  "Generate a block for LaTeX or plain text with optional name and label."
-  (if (equal backend 'latex)
-      (cond  ;; LaTeX block generation
-       ((and (string-equal name "") (string-equal label ""))  ;; No name and no label
-        (format "\\begin{%s}%s\\end{%s}" env contents env))
-       ((string-equal name "")  ;; No name, but label present
-        (format "\\begin{%s}\\label{%s}%s\\end{%s}" env label contents env))
-       ((string-equal label "")  ;; Name present, no label
-        (format "\\begin{%s}[%s]%s\\end{%s}" env name contents env))
-       (t  ;; Both name and label present
-        (format "\\begin{%s}[%s]\\label{%s}%s\\end{%s}" env name label contents env)))
-    (cond  ;; Plain text block generation
-     ((and (string-equal name "") (string-equal label ""))  ;; No name and no label
-      (format "%s: %s" (capitalize env) contents))
-     ((string-equal name "")  ;; No name, but label present
-      (format "%s: %s %s" (capitalize env) label contents))
-     ((string-equal label "")  ;; Name present, no label
-      (format "%s: [%s] %s" (capitalize env) name contents))
-     (t  ;; Both name and label present
-      (format "%s: [%s] %s %s" (capitalize env) name label contents)))))
-
-
-(use-package! org-special-block-extras
-  :hook (org-mode . org-special-block-extras-mode)
-  :config
-  (org-defblock theo (name "" label "") 'nil ""
-                (my/generate-block "theorem" name label))
-  (org-defblock defi (name "" label "") 'nil ""
-                (my/generate-block "definition" name label))
-  (org-defblock coro (name "" label "") 'nil ""
-                (my/generate-block "corollary" name label))
-  (org-defblock prep (name "" label "") 'nil ""
-                (my/generate-block "preposition" name label))
-  (org-defblock lemma (name "" label "") 'nil ""
-                (my/generate-block "lemma" name label))
-  (org-defblock proof (name "" label "") 'nil ""
-                (my/generate-block "proof" name label))
-  (org-defblock remark (name "" label "") 'nil ""
-                (my/generate-block "remark" name label))
-  (org-defblock example (name "" label "") 'nil ""
-                (my/generate-block "example" name label))
-  (org-defblock rule (name "" label "") 'nil ""
-                (my/generate-block "myrule" name label))
-
-  (org-link-set-parameters "todo"
-                           :face '(:foreground "red")
-                           :export (lambda (path desc backend)
-                                     (cond
-                                      ((eq backend 'latex)
-                                       (format "\\mytodo{%s}" path))
-                                      ((eq backend 'html)
-                                       (format "<span class=\"todo\">%s</span>" path)))))
-  (org-link-set-parameters "todoinline"
-                           :face '(:foreground "red")
-                           :export (lambda (path desc backend)
-                                     (cond
-                                      ((eq backend 'latex)
-                                       (format "\\todoin{%s}" path))
-                                      ((eq backend 'html)
-                                       (format "<span class=\"todoinline\">%s</span>" path)))))
-  (org-link-set-parameters "missingfigure"
-                           :face '(:foreground "red")
-                           :export (lambda (path desc backend)
-                                     (cond
-                                      ((eq backend 'latex)
-                                       (format "\\missingfigure{%s}" path))
-                                      ((eq backend 'html)
-                                       (format "<span class=\"missingfigure\">%s</span>" path))))))
-#+end_src
-I should create a link like to add a sidenote or footnote.
-** Beamer
+*** Beamer
 #+begin_src elisp
 (setq org-beamer-theme "[progressbar=foot]metropolis"
       org-beamer-frame-level 2)
 #+end_src
+** org-special-blocks-extra
+#+begin_src elisp :tangle packages.el
+(package! org-special-block-extras)
+#+end_src
+
+#+begin_src emacs-lisp :tangle no
+(use-package! org-special-block-extras
+  :after org)
+#+end_src
 * UI
-** Olivetti + auto-olivetti
-Be aware that it may cause lag (for some reason, profiler says it uses 79% of memory).
-Alternative: perfect-margin.
+** Olivetti
 #+begin_src emacs-lisp :tangle packages.el
 (package! olivetti)
 (package! auto-olivetti
   :recipe (:host sourcehut :repo "ashton314/auto-olivetti"))
 #+end_src
-#+begin_src emacs-lisp
+
+#+begin_src emacs-lisp :tangle yes
 (use-package! olivetti
   :hook (text-mode . olivetti-mode)
-  :config (setq-default olivetti-body-width 100))
-#+end_src
-** Treemacs
-#+begin_src elisp
-(after! treemacs
-  (setq treemacs-show-hidden-files 'nil)
-  (treemacs-hide-gitignored-files-mode 1))
-#+end_src
-** Indent-guides
-Needs =brew/emacs-mac=, only emacs package that supports stripes.
-#+begin_src elisp :tangle no
-(package! indent-bars
-  :recipe (:host github :repo "jdtsmith/indent-bars"))
-#+end_src
-#+begin_src elisp :tangle no
-(use-package indent-bars
-  :custom
-  (indent-bars-treesit-support t)
-  (indent-bars-no-descend-string t)
-  (indent-bars-treesit-ignore-blank-lines-types '("module"))
-  (indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
-                               list list_comprehension
-                               dictionary dictionary_comprehension
-                               parenthesized_expression subscript) (cpp argument_list parameters)))
-  :config
-  (setq indent-bars-color '(region :face-bg t :blend 0.6)
-        indent-bars-pattern "."
-        indent-bars-width-frac 0.1
-        indent-bars-pad-frac 0.1
-        indent-bars-zigzag nil
-        indent-bars-color-by-depth nil
-        indent-bars-highlight-current-depth nil
-        indent-bars-display-on-blank-lines t)
-  :hook ((prog-mode) . indent-bars-mode))
+  :config (setq-default olivetti-body-width 70))
 #+end_src
 * Tools
-** [[https://github.com/blahgeek/emacs-lsp-booster][blahgeek/emacs-lsp-booster]]
-#+begin_src elisp
-;; plist for deserialization -> https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
-(setenv "LSP_USE_PLISTS" "true")
-(after! lsp-mode
-(setq lsp-use-plists 't))
-
-;; For LSP-mode
-(defun lsp-booster--advice-json-parse (old-fn &rest args)
-  "Try to parse bytecode instead of json."
-  (or
-   (when (equal (following-char) ?#)
-     (let ((bytecode (read (current-buffer))))
-       (when (byte-code-function-p bytecode)
-         (funcall bytecode))))
-   (apply old-fn args)))
-(advice-add (if (progn (require 'json)
-                       (fboundp 'json-parse-buffer))
-                'json-parse-buffer
-              'json-read)
-            :around
-            #'lsp-booster--advice-json-parse)
-
-(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
-  "Prepend emacs-lsp-booster command to lsp CMD."
-  (let ((orig-result (funcall old-fn cmd test?)))
-    (if (and (not test?)                             ;; for check lsp-server-present?
-             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
-             lsp-use-plists
-             (derived-mode-p 'org-mode)
-             (not (functionp 'json-rpc-connection))  ;; native json-rpc
-             (executable-find "emacs-lsp-booster"))
-        (progn
-          (message "Using emacs-lsp-booster for %s!" orig-result)
-          (cons "emacs-lsp-booster" orig-result))
-      orig-result)))
-(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+** [[https://github.com/SavchenkoValeriy/emacs-powerthesaurus][SavchenkoValeriy/emacs-powerthesaurus]]
+Use =powerthesaurus-lookup-dwim=.
+#+begin_src elisp :tangle packages.el
+(package! powerthesaurus)
 #+end_src
-** Ignore lsp-warning
-#+begin_src elisp
-(after! (lsp-mode)
-(add-to-list 'warning-suppress-log-types '(lsp-mode))
-(add-to-list 'warning-suppress-types '(lsp-mode)))
-#+end_src
-** [[https://github.com/svaante/dape][svaante/dape]]
+** Debugger
+DOOM's also has a debugger module, but dap-mode is the standard.
+*** [[https://github.com/svaante/dape][svaante/dape]]
 I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][codelldb]].
 #+begin_src elisp :tangle packages.el
 (package! dape-mode
@@ -1146,67 +632,36 @@ I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][code
         dape-cwd-fn 'projectile-project-root)
   (dape-breakpoint-global-mode))
 #+end_src
-** [[https://github.com/SavchenkoValeriy/emacs-powerthesaurus][SavchenkoValeriy/emacs-powerthesaurus]]
-Use =powerthesaurus-lookup-dwim=.
-#+begin_src elisp :tangle packages.el
-(package! powerthesaurus)
+** LSP (eglot or LSP-mode)
+#+begin_src emacs-lisp :tangle yes
+(after! lsp-mode
+  (add-hook! 'lsp-mode-hook (lambda () (lsp-inlay-hints-mode 1))))
 #+end_src
 
-** [[https://github.com/jdtsmith/abridge-diff][jdtsmith/abridge-diff]] for Maggit
-#+begin_src elisp :tangle no
-(package! abridge-diff)
+#+begin_src emacs-lisp :tangle yes
+(after! eglot
+  ;; https://www.reddit.com/r/emacs/comments/1n3o2we/on_macos_in_gui_with_eglot_turned_on_when_the/
+  (setq eglot-code-action-indicator "*"))
 #+end_src
-#+begin_src elisp :tangle no
-(use-package abridge-diff
-  :after magit ;; optional, if you'd like to use with magit
-  :init (abridge-diff-mode 1))
-#+end_src
-** [[https://github.com/casouri/eldoc-box][casouri/eldoc-box]]
-#+begin_src elisp :tangle no
-(package! eldoc-box
-  :recipe (:host github :repo "casouri/eldoc-box"))
-#+end_src
-#+begin_src emacs-lisp :tangle no
-(use-package eldoc-box
-  :hook
-  (prog-mode . eldoc-box-hover-mode)
-  :config
-  (setq eldoc-box-offset '(16 32 60)
-        eldoc-box-only-multi-line 't))
-#+end_src
-** [[https://github.com/positron-solutions/dslide][positron-solutions/dslide]]
-#+begin_src elisp :tangle packages.el
-(package! dslide
-  :recipe (:host github :repo "positron-solutions/dslide"))
-#+end_src
-#+begin_src elisp
-(after! dslide
-  (global-set-key "\C-x\C-n" 'dslide-deck-forward)
-  (global-set-key "\C-x\C-p" 'dslide-deck-backward))
-#+end_src
+
 * AI
-Would like to also look into [[https://www.youtube.com/watch?v=bsRnh_brggM][Every LLM in Emacs]], [[https://github.com/karthink/gptel][karthink/gptel]] and [[https://github.com/khoj-ai/khoj][khoj-ai/khoj]].
-
-https://github.com/armindarvish/consult-omni
-https://github.com/khoj-ai/khoj - RAG
-
 ** GPTel
-Other backends I might use: openrouter.ai, novita.ai, together.ai
-#+begin_src elisp :tangle packages.el
-(package! gptel :recipe (:nonrecursive t))
+Enabled by the =llm= doom module.
+#+begin_src emacs-lisp :tangle yes
+(after! gptel
+  (setq
+ gptel-model 'gemini-2.5-pro
+ gptel-backend (gptel-make-gemini "Gemini"
+                 :key "AIzaSyDot20eqbyTPLERaDUEz2Xg4zKqvnPBlLQ"
+                 :stream t))
+  )
 #+end_src
-#+begin_src elisp
-(use-package! gptel
-  :config
-  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
-  (add-hook 'gptel-post-response-functions 'gptel-end-of-response))
-#+end_src
-** Completion
-*** Copilot
+
+** Completion / copilot
 It causes around 0.3s of startup time.
 #+begin_src elisp :tangle packages.el
 (package! copilot
-  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
 #+end_src
 #+begin_src elisp
 (use-package! copilot
@@ -1218,61 +673,5 @@ It causes around 0.3s of startup time.
   :config
   (setq copilot-idle-delay 0.2))
 #+end_src
-*** Codeium
-#+begin_src elisp :tangle packages.el
-(package! codeium :recipe (:host github :repo "Exafunction/codeium.el"))
-#+end_src
-#+begin_src elisp :tangle no
-;; we recommend using use-package to organize your init.el
-(use-package codeium
-  :init
-  (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
-  ;; if you want multiple completion backends, use cape (https://github.com/minad/cape):
-  ;; (add-hook 'python-mode-hook
-  ;;     (lambda ()
-  ;;         (setq-local completion-at-point-functions
-  ;;             (list (cape-capf-super #'codeium-completion-at-point #'lsp-completion-at-point)))))
-  ;; an async company-backend is coming soon!
 
-  ;; codeium-completion-at-point is autoloaded, but you can
-  ;; optionally set a timer, which might speed up things as the
-  ;; codeium local language server takes ~0.2s to start up
-  ;; (add-hook 'emacs-startup-hook
-  ;;  (lambda () (run-with-timer 0.1 nil #'codeium-init)))
-
-  ;; :defer t ;; lazy loading, if you want
-  :config
-  (setq use-dialog-box nil) ;; do not use popup boxes
-
-  ;; if you don't want to use customize to save the api-key
-  (setq codeium/metadata/api_key "")
-
-  ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
-  (setq codeium-api-enabled
-        (lambda (api)
-          (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
-  ;; you can also set a config for a single buffer like this:
-  ;; (add-hook 'python-mode-hook
-  ;;     (lambda ()
-  ;;         (setq-local codeium/editor_options/tab_size 4)))
-
-  ;; You can overwrite all the codeium configs!
-  ;; for example, we recommend limiting the string sent to codeium for better performance
-  (defun my-codeium/document/text ()
-    (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
-  ;; if you change the text, you should also change the cursor_offset
-  ;; warning: this is measured by UTF-8 encoded bytes
-  (defun my-codeium/document/cursor_offset ()
-    (codeium-utf8-byte-length
-     (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
-  (setq codeium/document/text 'my-codeium/document/text)
-  (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
-#+end_src
-
-** AI pair programming
-[[https://aider.chat/][Aider]] is the standard, can be used through
-*** Aider
-- [[github:MatthewZMD/aidermacs][aidermacs]]
-- [[github:tninja/aider.el]].
-*** Claude-code
-- [[https://github.com/manzaltu/claude-code-ide.el][GitHub - manzaltu/claude-code-ide.el: Claude Code IDE integration for Emacs]]
+Another option is codeium, which is more private (and faster?).

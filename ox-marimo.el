@@ -1,19 +1,19 @@
 ;; ox-marimo.el --- Marimo Markdown Backend for Org Export Engine -*- lexical-binding: t; -*-
 ;; Code:
 (org-export-define-derived-backend 'marimo 'md
-  :menu-entry
-  '(?M "Export to Marimo-Markdown"
-    ((?M "To temporary buffer"
-         (lambda (a s v b) (org-marimo-export-as-markdown a s v)))
-     (?m "To file" (lambda (a s v b) (org-marimo-export-to-markdown a s v)))
-     (?o "To file and open"
-         (lambda (a s v b)
-           (if a (org-marimo-export-to-markdown t s v)
-             (org-open-file (org-marimo-export-to-markdown nil s v)))))))
-  :translate-alist
-  '((template . org-marimo-template)
-    (paragraph . org-marimo-paragraph)
-    (src-block . org-marimo-code-cell)))
+                                   :menu-entry
+                                   '(?M "Export to Marimo-Markdown"
+                                     ((?M "To temporary buffer"
+                                          (lambda (a s v b) (org-marimo-export-as-markdown a s v)))
+                                      (?m "To file" (lambda (a s v b) (org-marimo-export-to-markdown a s v)))
+                                      (?o "To file and open"
+                                          (lambda (a s v b)
+                                            (if a (org-marimo-export-to-markdown t s v)
+                                              (org-open-file (org-marimo-export-to-markdown nil s v)))))))
+                                   :translate-alist
+                                   '((template . org-marimo-template)
+                                     (paragraph . org-marimo-paragraph)
+                                     (src-block . org-marimo-code-cell)))
 
 (defun org-marimo-template (contents _info)
   (concat

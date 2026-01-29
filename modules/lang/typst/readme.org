@@ -1,0 +1,53 @@
+#+title: Proto Typst's Doom-Emacs Module
+
+
+* Dealing with typst files
+** TODO Tree-sitter
+*** TODO Jinx (other spell checking?)
+*** TODO Mixed pitch
+** TODO LSP (tinymist)
+https://myriad-dreamin.github.io/tinymist
+- [ ] =doctor.el= check for the binaries
+** TODO Typst-preview
+https://github.com/havarddj/typst-preview.el
+- might be duplicated with lsp-typst? I think it has some preview functionality
+* Org-mode integration
+** org-export
+Problems I have identified:
+- =verbatim= is mapping to =#raw()=
+- hyphens are being exported as =\u{2d}=
+- definition list is not mapping to a list.
+- source blocks are not exporting as coding block
+- for some reason, the bibliography export add ="../arq/bib.bib"= (even though my config says ="/Users/ieremies/arq/bib.bib"=)...'
+#+begin_src emacs-lisp :tangle packages.el
+(package! ox-typst
+  :recipe (:host github :repo "jmpunkt/ox-typst"))
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package ox-typst
+  :after org
+  :config
+  (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
+        org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
+#+end_src
+** https://github.com/jakebox/org-preview-html?tab=readme-ov-file#usage
+
+* Typst itself
+Some typst packages I've looked into:
+- https://typst.app/universe/package/pinit
+- https://typst.app/universe/package/lovelace
+- https://typst.app/universe/package/lilaq
+- https://typst.app/universe/package/frame-it
+- https://typst.app/universe/package/fletcher
+- https://typst.app/universe/package/equate
+- https://typst.app/universe/package/drafting
+
+Table related packages:
+- https://typst.app/universe/package/tblr - featureful package
+- https://typst.app/universe/package/tablem - allows to insert table in markdown style
+- https://typst.app/universe/package/booktabs - simple booktab like package
+
+Tools:
+- https://github.com/e-zz/MixTex-OCR-WebRebuild
+- https://github.com/typstyle-rs/typstyle
+- https://github.com/mitex-rs/mitex

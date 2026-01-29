@@ -1,77 +1,264 @@
-#+title: Todo
+#+Title: Todo
 
+* General
+* Nano-emacs
+https://github.com/rougier/book-mode/blob/master/article/screenshot.png
+https://github.com/rougier/book-mode/blob/master/book-mode.png
+https://github.com/rougier/nano-emacs/blob/master/images/nano-mu4e.png
+https://github.com/rougier/svg-tag-mode/blob/main/examples/example-1.el
+** https://github.com/rougier/book-mode
+** https://github.com/rougier/nano-sidebar
+** https://github.com/rougier/svg-tag-mode
+** https://github.com/rougier/org-margin
+* App
+** [#B] rss
+* Checkers
+** Grammar
+*** Harper
+https://github.com/Automattic/harper/discussions/150
+*** Language tool
+https://github.com/PillFall/languagetool.el
+https://github.com/languagetool-org/languagetool
+https://melpa.org/#/flycheck-languagetool
+* Completion
+- [ ] Autocorrect words, perhaps based on context (AI?) or automatic dabbrev-expand.
+** Hippie
+This is something I should use more.
+#+begin_src elisp
+(global-set-key [remap dabbrev-expand] #'hippie-expand)
+(setq hippie-expand-try-functions-list
+      '(try-expand-list
+        try-expand-dabbrev-visible
+        try-expand-dabbrev
+        try-expand-all-abbrevs
+        try-expand-dabbrev-all-buffers
+        try-complete-file-name-partially
+        try-complete-file-name
+        try-expand-dabbrev-from-kill
+        try-expand-whole-kill
+        try-expand-line
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol))
+#+end_src
+
+** Cape
+#+begin_src elisp :tangle packages.el
+(package! cape)
+#+end_src
+#+begin_src elisp
+(use-package cape
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-keyword)
+  (add-to-list 'completion-at-point-functions #'cape-abbrev)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev))
+#+end_src
+
+** Vertico
+https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-command-or-completion-category
+#+begin_src elisp
+(after! (vertico vertico-posframe)
+  (setq vertico-posframe-parameters
+        '((left-fringe . 8)
+          (right-fringe . 8))))
+#+end_src
+** Consult
+#+begin_src elisp :tangle no
+(consult-customize
+ consult-line
+ :add-history (seq-some #'thing-at-point '(region symbol)))
+
+(defalias 'consult-line-thing-at-point 'consult-line)
+
+(consult-customize
+ consult-line-thing-at-point
+ :initial (thing-at-point 'symbol))
+#+end_src
+** Flyover
+#+begin_src elisp :tangle packages.el
+(package! flyover
+  :recipe (:host github :repo "konrad1977/flyover"))
+#+end_src
+#+begin_src elisp :tangle no
+(use-package! flyover
+    :after flycheck
+    :hook (flycheck-mode . flyover-mode)
+    :config
+    ;; Use theme colors for error/warning/info faces
+    (setq flyover-use-theme-colors t)
+    ;; Adjust background lightness (lower values = darker)
+    (setq flyover-background-lightness 45)
+    ;; Make icon background darker than foreground
+    (setq flyover-percent-darker 40)
+    (setq flyover-text-tint 'lighter) ;; or 'darker or nil
+    ;; "Percentage to lighten or darken the text when tinting is enabled."
+    (setq flyover-text-tint-percent 50))
+#+end_src
+** https://code.bsdgeek.org/adam/corfu-candidate-overlay
+* Editor
+** [[https://github.com/magnars/expand-region.el][magnars/expand-region.el]]
+Expand (contract) selected regions.
+** https://github.com/cpitclaudel/quick-peek or https://github.com/Ziqi-Yang/peek
+** [#A] https://xenodium.com/emacs-generate-a-swift-initializer
+** https://mjdiloreto.github.io/posts/yasnippet-helpful-buffer/
+** https://github.com/emacs-tree-sitter/treesit-fold
+** https://github.com/jamescherti/kirigami.el
+** https://github.com/jamescherti/outline-indent.el
+** https://github.com/mickeynp/combobulate
+** Minimap of context overview
+Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as funções/classes/variáveis (como o treemacs faz), num arquivo org, mostrar as headlines etc...
+[[https://github.com/knupfer/org-panes/blob/master/org-panes.el][org-panes/org-panes.el at master · knupfer/org-panes · GitHub]]
+
+* Emacs
+** https://github.com/armindarvish/consult-omni
+** [#B] [[https://github.com/casouri/xeft][casourti/xeft]] or [[https://github.com/hasu/notdeft][hasu/notdeft]]
+** https://protesilaos.com/codelog/2023-02-28-emacs-beframe-demo/
+** pdf
+https://codeberg.org/divyaranjan/emacs-reader
+https://www.reddit.com/r/emacs/comments/1pgliu9/a_new_pdf_reader_for_emacs/
+** tramp
+https://www.reddit.com/r/emacs/comments/1pgfgtr/announcing_tramphlo_higher_level_operations/
+I might want to use this to code on the opt.
+** dired
+https://github.com/Fuco1/dired-hacks
+https://github.com/purcell/diredfl
+* Email
+** Set up email :email:
+
+* Languages
+** uv + ty :python:lang:
+** Texpresso
+#+begin_src elisp :tangle no
+(add-to-list 'load-path
+             (expand-file-name "~/bin/texpresso-repo/emacs/" user-emacs-directory))
+(use-package! texpresso)
+#+end_src
+** https://github.com/haji-ali/preview-point
+* Org-mode
+** Change Latex inline math to Typst inline math :org:
+** https://github.com/fbkarsdorp/org-agenda-dashboard
+** Adicionar linhas após o fim do dia na org-agenda
+** Rearranjar o org-super-agenda
+Fazer uma subseção com as coisas concluídas hoje.
+** https://github.com/isamert/corg.el
+** https://github.com/4honor/org-excalidraw
+** https://github.com/yibie/org-zettel-ref-mode
+** Publishing
+*** https://ogbe.net/blog/emacs_org_static_site
+*** https://pjs64.netlify.app/2205/04
+
+** Anotation
+Main packages: org-node + citar-org-mode + consult-notes
+Other packages: org-super+links + org-supertag + org-transclusion
+Alternatives: org-roam + citar-org-roam + consult-org-roam
+Might be interesting packages: [[https://github.com/d12frosted/vulpea][vulpea]]
+
+* UI
+** Treemacs
+#+begin_src elisp
+(after! treemacs
+  (setq treemacs-show-hidden-files 'nil)
+  (treemacs-hide-gitignored-files-mode 1))
+#+end_src
+** Indent-guides
+Needs =brew/emacs-mac=, only emacs package that supports stripes.
+#+begin_src elisp :tangle no
+(package! indent-bars
+  :recipe (:host github :repo "jdtsmith/indent-bars"))
+#+end_src
+#+begin_src elisp :tangle no
+(use-package indent-bars
+  :custom
+  (indent-bars-treesit-support t)
+  (indent-bars-no-descend-string t)
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  (indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
+                               list list_comprehension
+                               dictionary dictionary_comprehension
+                               parenthesized_expression subscript) (cpp argument_list parameters)))
+  :config
+  (setq indent-bars-color '(region :face-bg t :blend 0.6)
+        indent-bars-pattern "."
+        indent-bars-width-frac 0.1
+        indent-bars-pad-frac 0.1
+        indent-bars-zigzag nil
+        indent-bars-color-by-depth nil
+        indent-bars-highlight-current-depth nil
+        indent-bars-display-on-blank-lines t)
+  :hook ((prog-mode) . indent-bars-mode))
+#+end_src
+** https://lepisma.xyz/2024/09/12/emacs-dictation-mode/
+** https://github.com/thisisran/nova
+** Cursor trail
+https://www.reddit.com/r/emacs/comments/1mho85x/cursor_trails_in_emacs/
+https://github.com/manateelazycat/holo-layer?tab=readme-ov-file#jelly-cursor-animation
+** fuzzy clock
+https://github.com/trevoke/fuzzy-clock.el
+* Tools
+** [[https://github.com/jdtsmith/abridge-diff][jdtsmith/abridge-diff]] for Maggit :maggit:tools:
+#+begin_src elisp :tangle no
+(package! abridge-diff)
+#+end_src
+#+begin_src elisp :tangle no
+(use-package abridge-diff
+  :after magit ;; optional, if you'd like to use with magit
+  :init (abridge-diff-mode 1))
+#+end_src
+** https://github.com/alphapapa/magit-todos
+** [[https://github.com/casouri/eldoc-box][casouri/eldoc-box]] :tools:
+#+begin_src elisp :tangle packages.el
+(package! eldoc-box
+  :recipe (:host github :repo "casouri/eldoc-box"))
+#+end_src
+#+begin_src emacs-lisp
+(use-package eldoc-box
+  :hook
+  (prog-mode . eldoc-box-hover-mode)
+  :config
+  (setq eldoc-box-offset '(16 32 60)
+        eldoc-box-only-multi-line 't))
+#+end_src
+** [[https://github.com/positron-solutions/dslide][positron-solutions/dslide]] :tools:
+#+begin_src elisp :tangle no
+(package! dslide
+  :recipe (:host github :repo "positron-solutions/dslide"))
+#+end_src
+#+begin_src elisp :tangle no
+(after! dslide
+  (global-set-key "\C-x\C-n" 'dslide-deck-forward)
+  (global-set-key "\C-x\C-p" 'dslide-deck-backward))
+#+end_src
+
+* AI
+Would like to also look into [[https://www.youtube.com/watch?v=bsRnh_brggM][Every LLM in Emacs]], [[https://github.com/karthink/gptel][karthink/gptel]] and [[https://github.com/khoj-ai/khoj][khoj-ai/khoj]].
+
+https://github.com/armindarvish/consult-omni
+https://github.com/khoj-ai/khoj - RAG
+** AI pair programming
+*** Aider
+- [[github:MatthewZMD/aidermacs][aidermacs]]
+- [[github:tninja/aider.el]].
+*** Claude-code
+- [[https://github.com/manzaltu/claude-code-ide.el][GitHub - manzaltu/claude-code-ide.el: Claude Code IDE integration for Emacs]]
+** https://github.com/lanceberge/elysium
+** https://www.reddit.com/r/emacs/comments/1g57cu7/spiffying_up_automatic_smerge_insertions_animated/
+** https://www.reddit.com/r/emacs/comments/1mf6j42/dont_generate_retrieve_and_transform_gptel_tools/
+** https://www.reddit.com/r/emacs/s/StOsEiJ8iM
+** Grammar correction script
+Percorrer iterativamente cada parágrafo, primeiro perguntando para corrigir qualquer possível erro de gramática, ortografia ou formalização.
+
+Depois, para fazer um que revisa o texto, conferindo símbolos, definições ou conceitos faltantes.
 * non-emacs
 - [[https://github.com/noisrucer/girok][noisrucer/girok]] CLI scheduler
 - [[https://github.com/Ryu0118/Kusa][Ryu0118/Kusa]] CLI display github contribution graph.
 - [[https://youtu.be/8W06wMNZmo8][How To Make An Amazing Custom Menu Bar For Your Mac With Sketchybar - YouTube]] -> mas eu preciso que mostre o próximo appointment como o Fantastical faz.
 - [[https://youtu.be/-FoWClVHG5g][Aerospace Is The Best Tiling Window Manager I've Tried On macOS - YouTube]]
-* Completion / Spell checking
-- In text mode, remove completion of other words in the text.
-- Auto correct words, perhaps based on context (AI??)
-- [[https://github.com/xenodium/org-block-capf][GitHub - xenodium/org-block-capf]]
-* Magit
-- =+forge= tava travando
-- https://shivjm.blog/better-magit-diffs/
-- [[https://github.com/alphapapa/magit-todos/tree/v1.8][GitHub - alphapapa/magit-todos at v1.8]]
-* editor
-** [[https://github.com/xenodium/company-org-block][xenodium/company-org-block]]
-Snippets for org blocks based on babel.
-But i am not using company.
-** [[https://github.com/magnars/expand-region.el][magnars/expand-region.el]]
-Expand (contract) selected regions.
-** https://github.com/cpitclaudel/quick-peek
-* Tree sitter
-** [[https://www.reddit.com/r/emacs/comments/zkb7aq/contextaware_yasnippets_via_treesitter/][Context-aware yasnippets (via tree-sitter) : emacs]]
-** https://mjdiloreto.github.io/posts/yasnippet-helpful-buffer/
-** https://www.reddit.com/r/emacs/comments/10rsxty/treesitauto_03_now_with_automatic_installation_of/
-** https://github.com/haritkapadia/ts-movemen
-** [[https://github.com/mickeynp/combobulate][mickeynp/combobulate]]
-Text editting and navegation based on tree-sitter (needs emacs29).
-* org
-** Some form of track of org-roam
-[[https:www.reddit.com/r/emacs/comments/zap1hi/comment/iypsh8g/?utm_source=share&utm_medium=web2x&context=3][auto git commit]], but it saves at every file save.
-I think some kind of save every day would be better.
-** https://github.com/colonelpanic8/org-window-habit
-** [[https://youtu.be/8vkymxjSrK0][Programmer Power Point: Dslide 0.5.1 EMACS LISP - YouTube]]
-** Agenda
-*** Adicionar linhas após o fim do dia na org-agenda
-*** Rearranjar o org-super-agenda
-Fazer uma subseção com as coisas concluídas hoje.
-*** https://github.com/fbkarsdorp/org-agenda-dashboard
-** finish style options based on Rafael's style
-** [[https://github.com/armindarvish/consult-web][GitHub - armindarvish/consult-web: Powerful Web and Omni Search inside Emacs]]
-** https://github.com/isamert/corg.el
-** [[https://github.com/4honor/org-excalidraw?tab=readme-ov-file][GitHub - 4honor/org-excalidraw: Open, create, export, and display excalidraw ...]]
-* Research (citation, org-roam, references)
-- https://github.com/yibie/org-zettel-ref-mode?tab=readme-ov-file
-- [[https://github.com/mclear-tools/consult-notes][mclear-tools/consult-notes]]
-- [[https://github.com/casouri/xeft][casourti/xeft]] or [[https://github.com/hasu/notdeft][hasu/notdeft]]
-* Outros
-Coisas sem uma categoria boa
-** Minimap of context overview
-Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as funções/classes/variáveis (como o treemacs faz), num arquivo org, mostrar as headlines etc...
-[[https://github.com/knupfer/org-panes/blob/master/org-panes.el][org-panes/org-panes.el at master · knupfer/org-panes · GitHub]]
-** word-counter-goal
-Algo que permita contar a quantidade de palavras adicionadas/removidas num conjunto de arquivos e marcar, na modeline, a sua meta de palavras.
-[[https://github.com/bnbeckwith/wc-goal-mode][GitHub - bnbeckwith/wc-goal-mode: Emacs mode to achieve word-count goals]]
-** https://github.com/minad/vertico/issues/245
-** https://www.youtube.com/watch?v=e7gBY6wCdxQ
-** https://www.reddit.com/r/emacs/comments/1g8yziv/toggle_hiding_direds_absolute_path/
-** https://github.com/eval-exec/super-hint.el
-* AI
-** https://github.com/daedsidog/evedel
-** https://www.reddit.com/r/emacs/comments/1g57cu7/spiffying_up_automatic_smerge_insertions_animated/
-** https://github.com/Aider-AI/aider | https://github.com/tninja/aider.el
-** https://github.com/jart/emacs-copilot
-** https://github.com/s-kostyaev/ellama
-** [[https://github.com/lanceberge/elysium][GitHub - lanceberge/elysium: Automatically apply AI-generated code changes in...]]
-** [[https://lepisma.xyz/2024/09/12/emacs-dictation-mode/index.html][Dictation Mode for Emacs]]
-** [[https://blog.tomoya.dev/posts/emacs-on-local-llm/][最強ローカルLLM実行環境としてのEmacs | 日々、とんは語る。]]
-** [[https://github.com/meain/yap][GitHub - meain/yap: Your Assistant for Prompting LLMs]]
-* LSP
-** LSP-peek-ui
-** [[https://github.com/Ziqi-Yang/peek][GitHub - Ziqi-Yang/peek: Create peek view below/above cursor point to show th...]]
-Could be useful for something to peek into org-roam nodes
-* UI
-** https://github.com/rougier/book-mode
-** https://github.com/rougier/nano-sidebar
+- Window manager (yabai?)
+- tmux + terminal + nvim?
+- Emacs!
+- Typst
+- Copilot-like: codeium, supermaven, tabnine, cursor
+- chat: Claude, Qwen, DeepSeek code.
+- Discord mais leve
+- ActivityWatcher + timewarrior = alguma forma de journalling
+

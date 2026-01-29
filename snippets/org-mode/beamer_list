@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: Beamer List Overlay
-# key: #+list
-# condition: t
-# --
-#+attr_beamer: :overlay <+->

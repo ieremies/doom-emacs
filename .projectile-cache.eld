@@ -1,0 +1,1 @@
+(".authinfo" "vertico-move-aside.el" "config.el" "ox-marimo.el" ".gitignore" "config.org" "init.el" "org-mode.org" "snippets/latex-mode/begin" "snippets/org-mode/beamer_list" "snippets/org-mode/beamer_pause" "snippets/org-mode/block" "snippets/org-mode/pli" "snippets/org-mode/source" "themes/other-doom-nano-dark-theme.el" "themes/other-doom-nano-light-theme.el" "todo.org")
