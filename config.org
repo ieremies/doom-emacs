@@ -652,7 +652,7 @@ Enabled by the =llm= doom module.
   (setq
  gptel-model 'gemini-2.5-pro
  gptel-backend (gptel-make-gemini "Gemini"
-                 :key "AIzaSyDot20eqbyTPLERaDUEz2Xg4zKqvnPBlLQ"
+                 :key ""
                  :stream t))
   )
 #+end_src
