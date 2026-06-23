@@ -42,6 +42,20 @@ Configurar filtros para coisas de PoE, LoL e demais, bem como algo para tirar v�
 - [ ] Autocorrect words, perhaps based on context (AI?) or automatic dabbrev-expand.
 - https://github.com/emacs-languagetool/eglot-ltex-plus
 - https://www.reddit.com/r/emacs/comments/1sp1wly/launching_a_new_grammarspell_checking_tool_for/
+Save misspelling and correction as abbreviation, but this has never worked.
+#+begin_src elisp :tangle no
+(after! jinx
+  (defun jinx--add-to-abbrev (overlay word)
+    "Add abbreviation to `global-abbrev-table'.
+The misspelled word is taken from OVERLAY.  WORD is the corrected word."
+    (let ((abbrev (buffer-substring-no-properties
+                   (overlay-start overlay)
+                   (overlay-end overlay))))
+      (message "Abbrev: %s -> %s" abbrev word)
+      (define-abbrev global-abbrev-table abbrev word)))
+
+  (advice-add 'jinx--correct-replace :before #'jinx--add-to-abbrev))
+#+end_src
 ** Grammar
 À esse ponto, eu acho que eu só desisto... usa no vscode
 *** Harper
@@ -160,6 +174,8 @@ Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as fun�
 [[https://github.com/knupfer/org-panes/blob/master/org-panes.el][org-panes/org-panes.el at master · knupfer/org-panes · GitHub]]
 
 * Emacs
+** dirvish
+When pressing ~tab~, it triggers ~dirvish-subtree-toggle~, the selection buffer does appear, the cursor previews on the background, but, after selecting and pressing ~RET~, nothing happens and the cursor comes
 ** [[https://github.com/bbatsov/super-save][Super-save]]
 ** https://github.com/armindarvish/consult-omni
 ** https://protesilaos.com/codelog/2023-02-28-emacs-beframe-demo/
@@ -175,6 +191,30 @@ I might want to use this to code on the opt.
 ** dired
 https://github.com/Fuco1/dired-hacks
 https://github.com/purcell/diredfl
+** Buffer to pdf
+#+begin_src emacs-lisp :tangle packages.el
+(package! buffer-to-pdf
+  :recipe (:host github :repo "protesilaos/buffer-to-pdf"))
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package! buffer-to-pdf
+  :config
+  ;; Configure `buffer-to-pdf-directory' to specify where PDF files are stored.
+  ;; This is the default value:
+  (setq buffer-to-pdf-directory (expand-file-name "~/Downloads/")))
+#+end_src
+** Buffer to pdf
+#+begin_src emacs-lisp :tangle packages.el
+(package! buffer-to-pdf
+  :recipe (:host github :repo "protesilaos/buffer-to-pdf"))
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package! buffer-to-pdf
+  :config
+  ;; Configure `buffer-to-pdf-directory' to specify where PDF files are stored.
+  ;; This is the default value:
+  (setq buffer-to-pdf-directory (expand-file-name "~/Downloads/")))
+#+end_src
 * Email
 ** Set up email :email:
 
