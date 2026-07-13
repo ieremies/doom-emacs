@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: org-cite-insert
+# key: @
+# type: command
+# condition: (save-excursion (backward-char) (or (bolp) (eq (char-before) ?\s)))
+# --
+(call-interactively 'org-cite-insert)

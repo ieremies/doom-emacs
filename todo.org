@@ -4,7 +4,7 @@
 - quando eu escrevo  `v ` fora do modo matemático, ele poderia colocar o $ imediatamente.
 - Esconder o $ assim como ele esconde o *.
 - Quando escrevendo um paper, seria interessante um inserção de citação registrar um abrev de citação. Tipo, após citar @Held12, escrever Held já troca para [cite:@Held12].
-* Nano-emacs
+** Nano-emacs
 - https://github.com/rougier/book-mode/blob/master/article/screenshot.png
 - https://github.com/rougier/book-mode/blob/master/book-mode.png
 - https://github.com/rougier/nano-emacs/blob/master/images/nano-mu4e.png
@@ -144,16 +144,14 @@ https://github.com/konrad1977/flyover
     ;; "Percentage to lighten or darken the text when tinting is enabled."
     (setq flyover-text-tint-percent 50))
 #+end_src
-** https://code.bsdgeek.org/adam/corfu-candidate-overlay
+** [[https://code.bsdgeek.org/adam/corfu-candidate-overlay][adam/corfu-candidate-overlay: Show first Corfu's completion candidate in an o...]]
 ** VOMPECCC
 https://www.reddit.com/r/emacs/comments/1sn4d2d/vompeccc_a_modular_completion_framework_for_emacs/
 ** [[https://www.reddit.com/r/emacs/comments/1nxinqo/miniposframe_mirror_your_minibuffer_in_a_floating/][mini-posframe]]
 * Editor
 - https://github.com/jacktasia/dumb-jump : "jump to definition" and "find references" package with support for 60+ programming languages that favors "just working". 
-- https://github.com/meow-edit/meow : Meow is yet another modal editing mode for Emacs. Meow aims to blend modal editing into Emacs with minimal interference with its original key-bindings, avoiding most of the hassle introduced by key-binding conflicts. This leads to lower necessary configuration and better integration. More is achieved with fewer commands to remember.
 - https://github.com/alphapapa/prism.el : prism disperses lisp forms (and other languages) into a spectrum of color by depth. It’s similar to rainbow-blocks, but it respects existing non-color face properties, and allows flexible configuration of faces and colors. It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
 - https://github.com/jamescherti/inhibit-mouse.el : disabling of mouse input
-
 
 
 ** Folding and indentation
@@ -176,7 +174,6 @@ Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as fun�
 * Emacs
 ** dirvish
 When pressing ~tab~, it triggers ~dirvish-subtree-toggle~, the selection buffer does appear, the cursor previews on the background, but, after selecting and pressing ~RET~, nothing happens and the cursor comes
-** [[https://github.com/bbatsov/super-save][Super-save]]
 ** https://github.com/armindarvish/consult-omni
 ** https://protesilaos.com/codelog/2023-02-28-emacs-beframe-demo/
 ** pdf
@@ -203,21 +200,23 @@ https://github.com/purcell/diredfl
   ;; This is the default value:
   (setq buffer-to-pdf-directory (expand-file-name "~/Downloads/")))
 #+end_src
-** Buffer to pdf
+* Email
+** Nano
 #+begin_src emacs-lisp :tangle packages.el
-(package! buffer-to-pdf
-  :recipe (:host github :repo "protesilaos/buffer-to-pdf"))
+(package! svg-tag-mode)
+(package! mu4e-dashboard
+  :recipe (:host github :repo "rougier/mu4e-dashboard"))
+(package! mu4e-thread-folding
+  :recipe (:host github :repo "rougier/mu4e-thread-folding"))
 #+end_src
 #+begin_src emacs-lisp :tangle yes
-(use-package! buffer-to-pdf
-  :config
-  ;; Configure `buffer-to-pdf-directory' to specify where PDF files are stored.
-  ;; This is the default value:
-  (setq buffer-to-pdf-directory (expand-file-name "~/Downloads/")))
+(add-load-path! (expand-file-name "~/bin/nano-emacs"))
+(use-package! mu4e-dashboard)
+(use-package! mu4e-thread-folding)
 #+end_src
-* Email
-** Set up email :email:
-
+** [[https://github.com/rougier/nano-emacs/tree/master][GitHub - rougier/nano-emacs: GNU Emacs / N Λ N O - Emacs made simple · GitHub]]
+** [[https://github.com/rougier/mu4e-thread-folding][GitHub - rougier/mu4e-thread-folding: Functions for folding threads in mu4e h...]]
+** [[https://github.com/rougier/mu4e-dashboard][GitHub - rougier/mu4e-dashboard: A dashboard for mu4e (mu for emacs) · GitHub]]
 * Languages
 ** uv + ty :python:lang:
 https://www.reddit.com/r/emacs/comments/1sy965x/uvel_a_declarative_emacs_interface_for_the_uv/
@@ -239,42 +238,56 @@ https://www.reddit.com/r/emacs/comments/1sy965x/uvel_a_declarative_emacs_interfa
 - https://www.reddit.com/r/emacs/comments/17fzthl/orgpublish_sorting_posts_based_on_data_in_the_org/
 
 ** Anotation
-Main packages: org-node + citar-org-mode + consult-notes
-Other packages: org-super+links + org-supertag + org-transclusion
-Alternatives: org-roam + citar-org-roam + consult-org-roam
-Might be interesting packages: [[https://github.com/d12frosted/vulpea][vulpea]]
 
-- org-roam :: https://github.com/org-roam/org-roam
+Requisitos:
+- links da forma mais simples possível: [[roam:referencia]]
+- alguma forma de ver os backlinks
+
+*** Sistemas de anotação:
+- org-roam :: https://github.com/org-roam/org-roam :: o original, mas sinto que ele acabou ficando convoluto. Definitivamente o mais feature complete e com mais extensões.
   - org-roam-tree :: https://github.com/bradmont/org-roam-tree
-- org-noter :: https://github.com/weirdNox/org-noter
-- org-supertag :: https://github.com/yibie/org-supertag/
 - org-super-links :: https://github.com/toshism/org-super-links
 - org-node :: https://github.com/meedstrom/org-node
-- org-brain :: https://github.com/Kungsgeten/org-brain
-- deft :: http://jblevins.org/projects/deft/
+- vulpea :: https://github.com/d12frosted/vulpea :: essa é a API para fazer as coisas, sem uma estrutura bem definida
+  - vulpea-ui :: https://github.com/d12frosted/vulpea-ui :: a interface visual para interagir
+  - [[https://github.com/d12frosted/vulpea/blob/master/docs/comparison.org][vulpea/docs/comparison.org at master · d12frosted/vulpea · GitHub]] 
+  - [[https://www.d12frosted.io/posts/2025-11-28-vulpea-v2-breaking-up-with-org-roam][Vulpea v2: a story of breaking up with org-roam - Boris Buliga]]
+- denote :: https://github.com/protesilaos/denote :: me parece a mais diferente das bibliotecas.
+  - denote-org :: https://protesilaos.com/emacs/denote-org 
+  - citar-denote :: https://github.com/pprevos/citar-denote/tree/main
+
+*** Outras ferramentas:
+- org-noter :: https://github.com/weirdNox/org-noter :: anotações junto a PDF
+- org-remark :: https://github.com/nobiot/org-remark :: highlight and annotate text files using Org mode.
+- org-supertag :: https://github.com/yibie/org-supertag/ :: tags como entradas em database
+- deft :: http://jblevins.org/projects/deft/ :: quickly browsing, filtering, and editing directories of plain text notes
   - notdeft :: https://github.com/hasu/notdeft
   - xeft :: https://github.com/casouri/xeft
-- org-zettelkasten :: https://github.com/l3kn/org-zettelkasten
-- org-wiki :: https://github.com/caiorss/org-wiki
+- org-transclusion :: https://github.com/nobiot/org-transclusion
+- consult-notes :: https://codeberg.org/mclear-tools/consult-notes
+  - consult-org-roam :: https://github.com/jgru/consult-org-roam
+
+*** Bibtex related
+
+Eu preciso que as citações no formato do [cite:@org-cite] sejam processados como links entre onde foi citado e a "referência".
+
+- org-roam tem suporte direto para isso https://www.orgroam.com/manual.html#Citations-1 utilizando o =:ROAM_REF: @org-cite=.
+- citar :: https://github.com/emacs-citar/citar :: integration with org-roam, denote, and zk
+  - citar-typst :: https://codeberg.org/ashton314/citar-typst 
+  - citar-org-roam :: https://github.com/emacs-citar/citar-org-roam
+  - citar-vulpea :: https://github.com/fabcontigiani/citar-vulpea
+- org-ref :: https://github.com/jkitchin/org-ref 
+
+*** Archived
+- small-notes :: https://github.com/villarragut/small-notes
+- grove :: https://github.com/jonathanchu/grove
+- TILES :: https://github.com/ctanas/tiles/
+- org-brain :: https://github.com/Kungsgeten/org-brain
 - howm :: https://kaorahi.github.io/howm/
 - hyperbole :: https://www.gnu.org/software/hyperbole/
 - zk :: https://github.com/localauthor/zk
 - ekg :: https://github.com/ahyatt/ekg
 - orgrr :: https://github.com/rtrppl/orgrr
-- denote :: https://github.com/protesilaos/denote
-- vulpea :: https://github.com/d12frosted/vulpea
-  - [[https://github.com/d12frosted/vulpea/blob/master/docs/comparison.org][vulpea/docs/comparison.org at master · d12frosted/vulpea · GitHub]] 
-  - [[https://www.d12frosted.io/posts/2025-11-28-vulpea-v2-breaking-up-with-org-roam][Vulpea v2: a story of breaking up with org-roam - Boris Buliga]]
-- org-remark :: https://github.com/nobiot/org-remark
-
-Bibtex related
-- citar :: https://github.com/emacs-citar/citar
-  - citar-typst :: https://codeberg.org/ashton314/citar-typst 
-
-Others
-- small-notes :: https://github.com/villarragut/small-notes
-- grove :: https://github.com/jonathanchu/grove
-- TILES :: https://github.com/ctanas/tiles/
 ** Agenda
 - https://github.com/fbkarsdorp/org-agenda-dashboard
 - Adicionar linhas após o fim do dia na org-agenda
@@ -315,7 +328,7 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
   :hook ((prog-mode) . indent-bars-mode))
 #+end_src
 ** https://lepisma.xyz/2024/09/12/emacs-dictation-mode/
-** https://github.com/thisisran/nova
+** [[https://github.com/thisisran/nova][GitHub - thisisran/nova: Emacs SVG Child Frames · GitHub]]
 ** Cursor trail
 https://www.reddit.com/r/emacs/comments/1mho85x/cursor_trails_in_emacs/
 https://github.com/manateelazycat/holo-layer?tab=readme-ov-file#jelly-cursor-animation
@@ -357,6 +370,7 @@ https://github.com/trevoke/fuzzy-clock.el
   (global-set-key "\C-x\C-p" 'dslide-deck-backward))
 #+end_src
 ** https://github.com/dakra/ghostel
+** [[https://github.com/jj-vcs/jj/discussions/4690][Delta for diffs · jj-vcs/jj · Discussion #4690 · GitHub]]
 
 * AI
 Would like to also look into [[https://www.youtube.com/watch?v=bsRnh_brggM][Every LLM in Emacs]], [[https://github.com/karthink/gptel][karthink/gptel]] and [[https://github.com/khoj-ai/khoj][khoj-ai/khoj]].

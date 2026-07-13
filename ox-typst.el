@@ -3,7 +3,7 @@
 ;; Author: you
 ;; Version: 0.2.0
 ;; Keywords: org, export, typst
-;; Package-Requires: ((emacs "27.1") (org "9.6"))
+;; Package-Requires: ((emacs "28.1") (org "9.6"))
 
 ;;; Commentary:
 ;;
@@ -21,10 +21,56 @@
 ;; Usage:
 ;;   M-x org-typst-export-to-typst   → write <file>.typ
 ;;   M-x org-typst-export-as-typst   → show result in a buffer
+;;
+;; TODO What is missing:
+;; - Citations (`[cite:@key]`) → Typst `#cite(<key>)`
+;; - Tables → Typst `#table(…)`
+;; - Footnotes → Typst `#footnote[…]`
+;; - Document metadata (`#+TITLE`, `#+AUTHOR`, `#+DATE`, `#+LANG`) → `#set doc(…)`
+;; - Images (`[[file:img.png]]`) → `#image("…")` — currently falls
+;;   through the link transcoder as a plain path
+;; 
+;; Missing from our transcoder alist:
+;; - `drawer` — `:PROPERTIES:`, `:LOGBOOK:` etc. (usually suppressed)
+;; - `property-drawer` — same family
+;; - `clock` — `CLOCK:` lines from org-clock
+;; - `planning` — `SCHEDULED:`, `DEADLINE:`, `CLOSED:` lines
+;; - `node-property` — individual key/value inside a property drawer
+;; - `diary-sexp` — date-based diary entries
+;; - `inlinetask` — inline tasks (a niche but real feature)
+;; 
+;; Inline markup gaps:
+;; - `superscript` / `subscript` — `x^2` and `x_i` in org become
+;;   `#super[…]` / `#sub[…]` in Typst (and conflict with Typst's own
+;;   math `^`/`_`)
+;; - `entity` — org named entities like `\alpha`, `\nbsp` etc. need
+;;    mapping to Typst equivalents
+;; 
+;; List nuances:
+;; - `checkbox` items (`- [ ]`, `- [X]`) — no transcoder yet
+;; 
+;; Structural:
+;; - `comment` / `comment-block` — should be suppressed or converted
+;;   to Typst `//` / `/* */`
+;; - `table-row` / `table-cell` — sub-elements of tables, need their
+;;   own transcoders
+;; - `verse-block` — `#+BEGIN_VERSE` has specific line-break semantics
+;; - `center-block` — `#+BEGIN_CENTER` → `#align(center)[…]`
+;; 
+;; Export infrastructure:
+;; - `#+INCLUDE` files — handled by org before the transcoder sees it,
+;;   so actually free
+;; - Selective export (`:noexport:` tags, `:EXPORT_FILE_NAME:`, etc.) —
+;;   handled by ox core, also free
+;; - Bibliography / reference list to go with citations
+;; - A `:options-alist` entry for Typst-specific options (paper size,
+;;   font, margins) that could be set via `#+TYPST_OPTIONS:`
+
 
 ;;; Code:
 
 (require 'ox)
+(require 'cl-lib)
 
 ;;; ---------------------------------------------------------------
 ;;; Helper – escape Typst special characters in plain text
@@ -153,28 +199,31 @@ CONTENTS holds transcoded body of the section."
 
 ;;;; Plain list (bullet / numbered / description)
 
-(defun ox-typst-plain-list (plain-list contents _info)
+(defun ox-typst-plain-list (_plain-list contents _info)
   "Transcode a PLAIN-LIST element.
-The actual markers are handled per-item; just return CONTENTS."
-  (ignore plain-list)
+Since both `org-mode' and typst have similar requirements for list,
+this simply returns CONTENTS."
   contents)
 
 (defun ox-typst-item (item contents info)
-  "Transcode an ITEM element into Typst list syntax."
+  "Transcode an ITEM element into Typst list syntax.
+Multi-line bodies and nested lists are indented to align under the
+first character after the bullet marker."
   (let* ((list-type (org-element-property
                      :type (org-element-property :parent item)))
-         (tag       (org-element-property :tag item))
+         (tag    (org-element-property :tag item))
          (bullet
           (pcase list-type
             ('ordered     "+ ")
-            ('descriptive
-             (concat "/ "
-                     (org-export-data tag info)
-                     ": "))
-            (_            "- ")))   ; unordered
-         ;; Indent nested content so Typst sees it as continuation.
-         (body (string-trim-right (or contents ""))))
-    (concat bullet body "\n")))
+            ('descriptive (concat "/ " (org-export-data tag info) ": "))
+            (_            "- ")))
+         (indent (make-string (length bullet) ?\s))
+         (body   (string-trim-right (or contents "")))
+         ;; Continuation lines must align under the first content char,
+         ;; past the bullet, so Typst does not treat them as new items.
+         (indented-body
+          (replace-regexp-in-string "\n" (concat "\n" indent) body)))
+    (concat bullet indented-body "\n")))
 
 ;;;; Link
 

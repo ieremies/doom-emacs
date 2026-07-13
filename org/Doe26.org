@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID:       3c0c777a-86e8-4c13-8989-fa1f723018dd
+:END:
+#+Title: Some Paper about Graphs
+
+<<thm-important>>
+#+begin_theorem 
+An important theorem
+#+end_theorem
+
+#+name: theo:important
+#+begin_theorem 
+An important theorem
+#+end_theorem
+
+#+begin_theorem :name theo:important2 
+An important theorem
+#+end_theorem
+
+#+begin_theorem :label theo:important3 
+An important theorem
+#+end_theorem

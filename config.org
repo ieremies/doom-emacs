@@ -238,6 +238,17 @@ Default window configuration.
 (after! smartparens
   (sp-local-pair 'org-mode "$" "$"))
 #+end_src
+** open-with
+#+begin_src emacs-lisp :tangle packages.el
+(package! openwith)
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package! openwith
+  :config
+  (openwith-mode 1)
+  (setq openwith-associations 
+        '(("\\.pdf\\'" "open" (file))))) 
+#+end_src
 
 * Email
 #+begin_src emacs-lisp :tangle yes
@@ -351,12 +362,185 @@ When configuring the email, this error appeared:
   (setf (alist-get 'python-ts-mode apheleia-mode-alist)
         '(ruff-isort ruff)))
 #+end_src
+** Typst
+#+begin_src emacs-lisp :tangle packages.el
+(package! typst-ts-mode
+  :recipe (:host codeberg :repo "meow_king/typst-ts-mode"))
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package! typst-ts-mode
+  :mode "\\.typ\\'"
+  :custom
+  (typst-ts-watch-options "--open")
+  (typst-ts-mode-enable-raw-blocks-highlight t)
+  :config
+  (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu))
+
+;; Faces that does not make sense to spellcheck
+(after! jinx
+  (add-to-list
+   'jinx-exclude-faces
+   '(typst-ts-mode
+     ;; not included font lock faces
+     ;; `font-lock-comment-face', `font-lock-string-face', `font-lock-doc-face'
+     ;; `font-lock-doc-markup-face'
+     font-lock-warning-face
+     font-lock-function-name-face
+     font-lock-function-call-face
+     font-lock-variable-name-face
+     font-lock-variable-use-face
+     font-lock-keyword-face
+     font-lock-comment-delimiter-face
+     font-lock-type-face
+     font-lock-constant-face
+     font-lock-builtin-face
+     font-lock-preprocessor-face
+     font-lock-negation-char-face
+     font-lock-escape-face
+     font-lock-number-face
+     font-lock-operator-face
+     font-lock-property-use-face
+     font-lock-punctuation-face
+     font-lock-bracket-face
+     font-lock-delimiter-face
+     font-lock-misc-punctuation-face
+     ;; typst-ts-mode created faces
+     typst-ts-markup-item-indicator-face
+     typst-ts-markup-term-indicator-face
+     typst-ts-markup-rawspan-indicator-face
+     typst-ts-markup-rawspan-blob-face
+     typst-ts-markup-rawblock-indicator-face
+     typst-ts-markup-rawblock-lang-face
+     typst-ts-markup-rawblock-blob-face
+     typst-ts-error-face
+     typst-ts-shorthand-face
+     typst-ts-markup-linebreak-face
+     typst-ts-markup-quote-face
+     typst-ts-markup-url-face
+     typst-ts-math-indicator-face)))
+#+end_src
 * org-mode
+** General
+#+begin_src emacs-lisp :tangle yes
+(after! org
+  (setq org-directory "~/org/"
+        ;; org-log-done 'time                    ; log when a task was closed
+        ;; org-export-allow-bind-keywords 't
+        ;; org-image-actual-width '(0.9)
+        org-ellipsis "…"
+        +fold-ellipsis org-ellipsis)
+
+  (map! :leader :desc "Paste org subtree" "m s p"#'org-paste-subtree
+                :desc "Yank org subtree"  "m s y"#'org-copy-subtree
+                ;; switching capture with scratch
+                :desc "Org capture"    "x"#'org-capture
+                :desc "Scratch buffer" "X"#'doom/open-scratch-buffer)
+
+  (add-hook 'org-mode-hook (lambda () (org-num-mode 1))))
+#+end_src
+*** Advice ~org-yank~
+#+begin_src emacs-lisp :tangle yes
+(defun my/org-cliplink-format-github (url title)
+  "Format GitHub link titles down to just 'user/repo'."
+  (replace-regexp-in-string "\\`GitHub - \\([^:]+\\).*" "\\1" title))
+
+(defun my/org-cliplink-format-reddit (url title)
+  "Format Reddit links, extracting subreddit and post title if blocked."
+  (if (and title (string-match-p "Blocked" title))
+      (cond
+       ;; Match full comment URL: /r/subreddit/comments/id/title_slug
+       ((string-match "/r/\\([^/]+\\)/comments/[^/]+/\\([^/?#]+\\)" url)
+        (let ((subreddit (match-string 1 url))
+              ;; Replace underscores with spaces
+              (url-title (replace-regexp-in-string "_" " " (match-string 2 url))))
+          (format "r/%s - %s" subreddit url-title)))
+       
+       ;; Match short URL or basic subreddit link: /r/subreddit
+       ((string-match "/r/\\([^/]+\\)" url)
+        (concat "r/" (match-string 1 url)))
+       
+       ;; Ultimate fallback
+       (t "Reddit"))
+    title)) ;; If it wasn't blocked, use the actual title
+
+
+(defun my/custom-org-cliplink ()
+  "Insert an org-mode link from clipboard, routing to site-specific formatters."
+  (interactive)
+  (org-cliplink-insert-transformed-title
+   (org-cliplink-clipboard-content)
+   (lambda (url title)
+     (let* ((parsed-url (url-generic-parse-url url))
+            (host (url-host parsed-url))
+            (clean-title
+             (cond
+              ;; 1. GitHub 
+              ((string= host "github.com")
+               (my/org-cliplink-format-github url title))
+              
+              ;; 2. Reddit 
+              ((member host '("reddit.com" "www.reddit.com" "old.reddit.com"))
+               (my/org-cliplink-format-reddit url title))
+
+              ;; 3. Default 
+              (t title))))
+       ;; Forward to the default org-mode link transformer
+       (org-cliplink-org-mode-link-transformer url clean-title)))))
+
+(defun my/org-yank-or-cliplink (orig-fun &rest args)
+  "Advice for `org-yank' to use `my/custom-org-cliplink' if the kill is an HTTPS URL.
+Otherwise, falls back to default `org-yank' behavior."
+  (let ((clipboard-text (ignore-errors (current-kill 0 t))))
+    (if (and clipboard-text
+             (string-match-p "\\`[ \t\n]*https://[^ \t\n]+[ \t\n]*\\'" clipboard-text))
+        (progn
+          (require 'org-cliplink)
+          ;; Call our new custom function instead of org-cliplink
+          (my/custom-org-cliplink))
+      (apply orig-fun args))))
+
+;; Attach the advice to org-yank
+(advice-add 'org-yank :around #'my/org-yank-or-cliplink)
+#+end_src
+
 ** latex
 #+begin_src elisp
 (after! org
   (setq org-highlight-latex-and-related '(native script entities)))
 #+end_src
+
+** Citations and references
+*** citar
+Already loaded by =:tools biblio=.
+#+begin_src emacs-lisp
+(use-package citar
+  :no-require
+  :hook
+  ;; (LaTeX-mode . citar-capf-setup)
+  ;; TODO (typst-mode . citar-capf-setup)
+  (org-mode   . citar-capf-setup)
+  :custom
+  ;; org-cite configuration
+  (org-cite-global-bibliography '("/Users/ieremies/arq/bib.bib"))
+  (org-cite-insert-processor    'citar)
+  (org-cite-follow-processor    'citar)
+  (org-cite-activate-processor  'citar)
+  ;; citar configuration
+  (citar-bibliography           '("/Users/ieremies/arq/bib.bib"))
+  (citar-library-paths          '("/Users/ieremies/arq/files/"))
+  (citar-notes-paths            '("/Users/ieremies/org/ref/"))
+  (citar-bibliography            org-cite-global-bibliography)
+  :bind
+  (:map org-mode-map :package org
+        ("C-a" . nil)
+        ("C-a" . #'org-cite-insert)))
+
+(use-package citar-embark
+  :after (citar embark)
+  :no-require
+  :config (citar-embark-mode))
+#+end_src
+
 * UI
 ** Mixed pitch
 The =mixed-pitch-mode= reverts back to the default =fixed-pitch :weight= value when a face is in =mixed-pitch-fixed-pitch-faces=.
@@ -371,9 +555,9 @@ The =mixed-pitch-mode= reverts back to the default =fixed-pitch :weight= value w
 #+end_src
 #+begin_src emacs-lisp :tangle no
 (use-package! mixed-pitch
-  :hook
-  (org-mode . mixed-pitch-mode)
-  (typst-ts-mode . mixed-pitch-mode)
+  ;; :hook
+  ;; (org-mode . mixed-pitch-mode)
+  ;; (typst-ts-mode . mixed-pitch-mode)
   :config
   (setq mixed-pitch-set-height 't))
 #+end_src
@@ -387,6 +571,23 @@ The =mixed-pitch-mode= reverts back to the default =fixed-pitch :weight= value w
 (use-package! olivetti
   :hook (text-mode . olivetti-mode)
   :config (setq-default olivetti-body-width 99))
+#+end_src
+* Term
+** Ghostel
+[[https://github.com/dakra/ghostel][GitHub - dakra/ghostel: Terminal emulator powered by libghostty · GitHub]]
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! ghostel)
+(package! evil-ghostel)
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package ghostel
+  :ensure t)
+(use-package ghostel-compile
+  :hook (after-init . ghostel-compile-global-mode))
+(use-package evil-ghostel
+  :after (ghostel evil)
+  :hook (ghostel-mode . evil-ghostel-mode))
 #+end_src
 * Tools
 ** [[https://github.com/SavchenkoValeriy/emacs-powerthesaurus][SavchenkoValeriy/emacs-powerthesaurus]]

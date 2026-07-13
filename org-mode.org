@@ -1,5 +1,0 @@
-#+title: Org Mode
-
-#+begin_src elisp
-(setq hello "hello")
-#+end_src

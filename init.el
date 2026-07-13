@@ -1,7 +1,5 @@
-;;; init.el -*- lexical-binding: t; -*-
-
 (doom! :app
-       ;; (rss +org)        ; emacs as an RSS reader
+       ;; (rss +org)        ; TODO emacs as an RSS reader -> papers, reddit, youtube
 
        :checkers
        syntax              ; TODO try with +childframe
@@ -12,11 +10,10 @@
        (corfu +orderless +icons +dabbrev)
        (vertico +childframe +icons)
 
-
        :editor
        (evil +everywhere)    ; vim-motion
        fold                  ; TODO try jamescherti/outline-indent.el or emacs-tree-sitter/treesit-fold
-       (format +onsave) ;
+       (format +onsave)      ;
        multiple-cursors      ;
        snippets              ;
 
@@ -27,18 +24,18 @@
        ;; vc                   ; not sure what it does
 
        :email
-       (mu4e +org +gmail +mbsync) ; TODO try!
+       (mu4e +org +gmail +mbsync)
 
        :lang
        (cc +lsp +tree-sitter)              ;
        emacs-lisp                          ; drown in parentheses
        (latex +fold +lsp)                  ; TODO install TexLab
        markdown                            ;
-       (org +hugo +dragndrop)             ;
+       (org +hugo +dragndrop)              ;
        (python +lsp +pyright +tree-sitter) ; TODO any uv integration? or ty?
        sh                                  ;
        (yaml +tree-sitter)                 ; JSON, but readable
-       ;; (typst +lsp +preview +org)
+       ;; (typst)
 
        :os
        (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
@@ -49,8 +46,7 @@
        (eval +overlay) ;
        llm             ;
        lookup          ;
-       (lsp +lsp +peek)   ; TODO ou um, ou outro!
-       ;; (lsp +eglot +booster)
+       (lsp +lsp +peek)   ;; or (lsp +eglot +booster)
        magit           ;
        tree-sitter     ;
 
@@ -76,5 +72,4 @@
 
        :config
        literate
-       (default +bindings +smartparens)
-       )
+       (default +bindings +smartparens))

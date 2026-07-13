@@ -1,18 +1,18 @@
 ;; Packages
-(use-package typst-ts-mode
-  :mode "\\.typ\\'"
-  :custom
-  (typst-ts-watch-options "--open")
-  (typst-ts-mode-enable-raw-blocks-highlight t)
 
-  :config
-  (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu)
+;; Explicitly tell Emacs where to find the mode before it even tries
+(require 'typst-ts-mode)
+(add-to-list 'auto-mode-alist '("\\.typ\\'" . typst-ts-mode))
 
-  ;; HACK this shouldn't be here!
-  (set-face-attribute 'typst-ts-markup-label-face nil
-                      :foreground "#4aaab2")
-  (set-face-attribute 'typst-ts-markup-reference-face nil
-                      :foreground "#4aaab2"))
+;; (use-package! typst-ts-mode
+;;   :mode "\\.typ\\'"
+;; :custom
+;; (typst-ts-watch-options "--open")
+;; (typst-ts-mode-enable-raw-blocks-highlight t)
+
+;; :config
+;; (keymap-set typst-ts-mode-map "C-c C-c" #'typst-ts-tmenu)
+;; )
 
 ;; Faces that does not makes sense to spellcheck
 (after! jinx
