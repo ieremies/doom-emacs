@@ -107,7 +107,7 @@ Default window configuration.
 (package! doom-nano-modeline
   :recipe (:host github :repo "ronisbr/doom-nano-modeline"))
 #+end_src
-#+begin_src elisp
+#+begin_src emacs-lisp :tangle yes
 (use-package! doom-nano-modeline
   :config
   (doom-nano-modeline-mode 1))
@@ -162,11 +162,11 @@ Default window configuration.
 #+end_src
 
 ** hotfuzz + orderless
-#+begin_src elisp :tangle packages.el
+#+begin_src emacs-lisp :tangle packages.el
 (package! hotfuzz
   :recipe (:host github :repo "axelf4/hotfuzz"))
 #+end_src
-#+begin_src elisp
+#+begin_src emacs-lisp :tangle yes
 ;;;###autoload
 (defun hotfuzz+orderless-all-completions (str table pred pt)
   (let ((words (split-string str nil t)))
@@ -229,8 +229,8 @@ Default window configuration.
   :config
   (super-save-mode +1)
   (auto-save-visited-mode +1) ;; for idle saves
-  (setq auto-save-default nil
-        super-save-silent t
+  (setq auto-save-default     nil
+        super-save-silent     t
         super-save-all-buffer t))
 #+end_src
 ** smart-parens
@@ -264,12 +264,13 @@ Default window configuration.
         ;; TODO mail queue for offline send
         ;; smtpmail-queue-mail        nil
         ;; smtpmail-queue-dir         "/home/user/Maildir/queue/cur"
+        mu4e-context-policy 'pick-first
+        mu4e-compose-context-policy 'ask
         )
 
   (setq mu4e-contexts
         (list
-         ;; --- GMAIL CONTEXT ---
-         (make-mu4e-context
+         (make-mu4e-context  ;; --- GMAIL CONTEXT ---
           :name "gmail"
           :match-func (lambda (msg)
                         (when msg
@@ -284,9 +285,7 @@ Default window configuration.
                   (mu4e-drafts-folder     . "/[Gmail]/Drafts")
                   (mu4e-trash-folder      . "/[Gmail]/Trash")
                   (mu4e-refile-folder     . "/[Gmail]/All Mail")))
-
-         ;; --- UNICAMP CONTEXT ---
-         (make-mu4e-context
+         (make-mu4e-context  ;; --- UNICAMP CONTEXT ---
           :name "unicamp"
           :match-func (lambda (msg)
                         (when msg
@@ -300,19 +299,10 @@ Default window configuration.
                   (mu4e-sent-folder       . "/[Gmail]/Sent Mail")
                   (mu4e-drafts-folder     . "/[Gmail]/Drafts")
                   (mu4e-trash-folder      . "/[Gmail]/Trash")
-                  (mu4e-refile-folder     . "/[Gmail]/All Mail")))))
-
-  ;; 3. CONTEXT POLICIES
-  (setq mu4e-context-policy 'pick-first
-        mu4e-compose-context-policy 'ask))
+                  (mu4e-refile-folder     . "/[Gmail]/All Mail"))))))
 #+end_src
-- Email offline queue
-- Message signature?
-- Quando enviando emails, ele utiliza ~org-msg~ para transformar em HTML a mensagem.  
-  - Isso deixa algumas coisas estranhas, mas é necessário para enviar coisas como formatação, código etc... 
-  - Preciso decidir o que fazer com isso.
 
-When configuring the email, this error appeared:
+When configuring the email, I needed that to fix an error.
 #+begin_src emacs-lisp :tangle yes
 (after! doom-themes
   (setcdr (assoc 'gnus-group-news-low-empty doom-themes-base-faces)
@@ -353,14 +343,6 @@ When configuring the email, this error appeared:
         (latex-list (assoc "LaTeX" TeX-command-list)))
     (setf (cadr tex-list) "%(tex)"
           (cadr latex-list) "%l")))
-#+end_src
-** Python
-#+begin_src emacs-lisp :tangle no
-(after! apheleia
-  (setf (alist-get 'python-mode apheleia-mode-alist)
-        '(ruff-isort ruff))
-  (setf (alist-get 'python-ts-mode apheleia-mode-alist)
-        '(ruff-isort ruff)))
 #+end_src
 ** Typst
 #+begin_src emacs-lisp :tangle packages.el
@@ -436,7 +418,8 @@ When configuring the email, this error appeared:
                 :desc "Org capture"    "x"#'org-capture
                 :desc "Scratch buffer" "X"#'doom/open-scratch-buffer)
 
-  (add-hook 'org-mode-hook (lambda () (org-num-mode 1))))
+  ;; (add-hook 'org-mode-hook (lambda () (org-num-mode 1)))
+  )
 #+end_src
 *** Advice ~org-yank~
 #+begin_src emacs-lisp :tangle yes
@@ -508,13 +491,79 @@ Otherwise, falls back to default `org-yank' behavior."
 (after! org
   (setq org-highlight-latex-and-related '(native script entities)))
 #+end_src
+** Note taking
+Currently using [[https://github.com/d12frosted/vulpea/][d12frosted/vulpea]] with [[https://github.com/d12frosted/vulpea-ui][d12frosted/vulpea-ui]] and [[https://github.com/fabcontigiani/citar-vulpea][fabcontigiani/citar-vulpea]].
+#+begin_src emacs-lisp :tangle packages.el
+(package! vulpea)
+(package! vulpea-ui)
+(package! citar-vulpea)
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package! vulpea
+  :defer t
+  :after-call doom-first-input-hook
+  :config
+  (vulpea-db-autosync-mode +1)
+  (setq vulpea-db-async-extraction  'full
+        ;; vulpea-db-parse-granularity 'element ;; helps on larger (>10MB) files
+        vulpea-db-parse-method      'single-temp-buffer
+        vulpea-db-index-plain-links nil
+        vulpea-db-sync-verbose      nil))
 
-** Citations and references
+;; (use-package! vulpea-ui
+;;   :config
+;;   ;; (add-hook 'org-mode-hook #'vulpea-ui-sidebar-open)
+;;   ;; Skip org-mode hooks during parsing (faster but may cause issues
+;;   ;; if your setup depends on mode hooks for org-element parsing)
+;;   ;; (setq vulpea-ui-fast-parse t)
+;;   )
+
+(use-package citar-vulpea
+  :ensure t
+  :after (citar vulpea)
+  :custom
+  (citar-vulpea-keyword             "bib")  ;; Tag used to identify bibliographic notes
+  (citar-vulpea-references-property "REFERENCES") ;; Property used for citation keys
+  (citar-vulpea-note-title-template "${author} (${date}) ${title}")
+  (citar-vulpea-notes-directory     "~/org/ref")
+  :config
+  (citar-vulpea-mode 1))
+
+(with-eval-after-load 'citar-vulpea
+  (defun citar-vulpea--create-note (citekey &optional _entry)
+    "Create a new bibliographic note for CITEKEY.
+ENTRY is the bibliography entry (unused, fetched from citar)."
+    (let* ((title (or (citar-vulpea--format-note-title citekey)
+                      (read-string "Title: ")))
+           (file-name-template (if citar-vulpea-notes-directory
+                                   (concat citar-vulpea-notes-directory "/" citekey ".org")
+                                 (concat citekey ".org")))
+           (note (vulpea-create
+                  title
+                  file-name-template
+                  :tags (list citar-vulpea-keyword)
+                  :properties (list (cons citar-vulpea-references-property
+                                          (concat "@" citekey))))))
+      (when note
+        (vulpea-visit note)))))
+
+;; Source: https://github.com/d12frosted/vulpea/tree/master/doom
+(map! :leader
+      (:prefix ("n" . "notes")
+       :desc "Find note"              "f" #'vulpea-find
+       :desc "Find backlink"          "B" #'vulpea-find-backlink
+       :desc "Insert link"            "i" #'vulpea-insert
+       :desc "Propagate title change" "p" #'vulpea-propagate-title-change
+       :desc "Rename tag everywhere"  "r" #'vulpea-tags-batch-rename
+       :desc "Full scan"              "S" #'vulpea-db-sync-full-scan
+       :desc "Doctor"                 "d" #'vulpea-doctor
+       :desc "Toggle sidebar"         "S" #'vulpea-ui-sidebar-toggle))
+#+end_src
+
 *** citar
 Already loaded by =:tools biblio=.
-#+begin_src emacs-lisp
-(use-package citar
-  :no-require
+#+begin_src emacs-lisp :tangle yes
+(use-package! citar
   :hook
   ;; (LaTeX-mode . citar-capf-setup)
   ;; TODO (typst-mode . citar-capf-setup)
@@ -535,32 +584,12 @@ Already loaded by =:tools biblio=.
         ("C-a" . nil)
         ("C-a" . #'org-cite-insert)))
 
-(use-package citar-embark
+(use-package! citar-embark
   :after (citar embark)
-  :no-require
   :config (citar-embark-mode))
 #+end_src
 
 * UI
-** Mixed pitch
-The =mixed-pitch-mode= reverts back to the default =fixed-pitch :weight= value when a face is in =mixed-pitch-fixed-pitch-faces=.
-#+begin_src diff :tangle no
--    face :family fix-pitch :height fix-height :weight fix-weight)
-- (face-remap-add-relative face :family fix-pitch :weight fix-weight))))
-+    face :family fix-pitch :height fix-height)
-+ (face-remap-add-relative face :family fix-pitch))))
-#+end_src
-#+begin_src emacs-lisp :tangle packages.el
-(package! mixed-pitch)
-#+end_src
-#+begin_src emacs-lisp :tangle no
-(use-package! mixed-pitch
-  ;; :hook
-  ;; (org-mode . mixed-pitch-mode)
-  ;; (typst-ts-mode . mixed-pitch-mode)
-  :config
-  (setq mixed-pitch-set-height 't))
-#+end_src
 ** Olivetti
 #+begin_src emacs-lisp :tangle packages.el
 (package! olivetti)
@@ -573,9 +602,7 @@ The =mixed-pitch-mode= reverts back to the default =fixed-pitch :weight= value w
   :config (setq-default olivetti-body-width 99))
 #+end_src
 * Term
-** Ghostel
-[[https://github.com/dakra/ghostel][GitHub - dakra/ghostel: Terminal emulator powered by libghostty · GitHub]]
-
+** [[https://github.com/dakra/ghostel][dakra/ghostel]]
 #+begin_src emacs-lisp :tangle packages.el
 (package! ghostel)
 (package! evil-ghostel)

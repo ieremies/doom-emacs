@@ -1,4 +1,7 @@
-#+Title: another paper?
+#+Title: My org-mode specification
+#+Subtitle: Also some testing ground
+#+language: pt
+#+date: nil
 
 As proven in [[id:3c0c777a-86e8-4c13-8989-fa1f723018dd::thm-important][the important theorem]]...
 I can also link using [[file:doe26.org::thm-important]] or to [[file:Doe26.org::theo:important]].
@@ -31,6 +34,14 @@ Fossem realmente exportados para um "todo inline".
 Existe também a questão de anotações e todo's no meio do parágrafo.
 Neste caso, creio que algo como um link todo:resolver ou [[note:aqui poderia ser melhor]].
 ~org-special-block-extras~ deve ser uma boa forma de resolver isso.
+
+Lista de checkboxs:
+- [ ] Em aberto
+- [-] Parcialmente
+- [X] Concluído
+  
+*** TODO A ser feito
+*** DONE Concluído
 
 * Blocos
 
@@ -80,6 +91,10 @@ print(3 + 2)
 
 Para fazer com que os resultados também sejam exportados, eu preciso corrigir o fato do babel não utilizar o ~uv~ para rodar as coisas.
 
+** Notas de rodapé
+
+O ~org-mode~ possui um suporte interessante para as notas de rodapé.[fn:1]
+
 * Listas
 
 1. Milk
@@ -96,3 +111,7 @@ Listas de definições:
     + aaa
     + ddd
 - mais termo :: mais definições
+
+* Footnotes
+
+[fn:1] Por exemplo, algo como estas notas! 
