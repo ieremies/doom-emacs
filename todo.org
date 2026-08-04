@@ -225,6 +225,7 @@ Can't run this since my emacs wasn't compiled with cairo support.
 *** [[https://github.com/rougier/nano-emacs/tree/master][GitHub - rougier/nano-emacs: GNU Emacs / N Λ N O - Emacs made simple · GitHub]]
 *** [[https://github.com/rougier/mu4e-thread-folding][GitHub - rougier/mu4e-thread-folding: Functions for folding threads in mu4e h...]]
 *** [[https://github.com/rougier/mu4e-dashboard][GitHub - rougier/mu4e-dashboard: A dashboard for mu4e (mu for emacs) · GitHub]]
+*** [[https://github.com/rougier/nano-mu4e][rougier/nano-mu4e]]
 * Languages
 ** uv + ty 
 [[https://www.reddit.com/r/emacs/comments/1sy965x/uvel_a_declarative_emacs_interface_for_the_uv/][r/emacs - uvel a declarative emacs interface for the uv]]

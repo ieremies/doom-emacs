@@ -401,6 +401,10 @@ When configuring the email, I needed that to fix an error.
      typst-ts-markup-url-face
      typst-ts-math-indicator-face)))
 #+end_src
+** csv
+#+begin_src emacs-lisp :tangle packages.el
+(package! csv-mode)
+#+end_src
 * org-mode
 ** General
 #+begin_src emacs-lisp :tangle yes
@@ -422,6 +426,18 @@ When configuring the email, I needed that to fix an error.
   )
 #+end_src
 *** Advice ~org-yank~
+When you yank (paste) in org-mode:
+
+1. ~my/org-yank-or-cliplink~ — ~:around~ advice on ~org-yank~. If clipboard is exactly one ~https://~ URL, skip normal paste and run cliplink. Otherwise falls through to default ~org-yank~.
+2. ~my/custom-org-cliplink~ — reads clipboard URL, parses host, routes to site-specific title formatters, then hands cleaned title to the stock org-cliplink transformer → inserts ~[[url][title]]~ link.
+3. GitHub formatter — strips ~GitHub -~ prefix from scraped page title, leaving ~user/repo~.
+4. Reddit formatter — handles "Blocked" titles (Reddit blocks scraped page titles). Rebuilds title from URL:
+   - full comment URL → ~r/subreddit - Post Title~ (underscores → spaces)
+   - short URL → ~r/subreddit~
+   - unparseable → literal ~Reddit~
+
+Net effect: paste a URL into org buffer → get clean org link instead of raw URL text, with nicer titles for GitHub/Reddit than what scrapers return.
+
 #+begin_src emacs-lisp :tangle yes
 (defun my/org-cliplink-format-github (url title)
   "Format GitHub link titles down to just 'user/repo'."
@@ -622,50 +638,3 @@ Use =powerthesaurus-lookup-dwim=.
 #+begin_src elisp :tangle packages.el
 (package! powerthesaurus)
 #+end_src
-** Debugger
-DOOM's also has a debugger module, but dap-mode is the standard.
-*** [[https://github.com/svaante/dape][svaante/dape]]
-I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][codelldb]].
-#+begin_src elisp :tangle packages.el
-(package! dape-mode
-  :recipe (:host github :repo "svaante/dape"))
-#+end_src
-#+begin_src elisp
-(use-package dape
-  :hook
-  ((kill-emacs . dape-breakpoint-save)
-   (after-init . dape-breakpoint-load))
-  :config
-  (setq dape-buffer-window-arrangement 'right
-        dape-cwd-fn 'projectile-project-root)
-  (dape-breakpoint-global-mode))
-#+end_src
-** LSP (eglot or LSP-mode)
-#+begin_src emacs-lisp :tangle yes
-(after! lsp-mode
-  (add-hook! 'lsp-mode-hook (lambda () (lsp-inlay-hints-mode 1))))
-#+end_src
-[[https://www.reddit.com/r/emacs/comments/1n3o2we/on_macos_in_gui_with_eglot_turned_on_when_the/][See this]]
-#+begin_src emacs-lisp :tangle yes
-(after! eglot
-  ;; 
-  (setq eglot-code-action-indicator "*"))
-#+end_src
-* AI
-** Completion / copilot
-It causes around 0.3s of startup time.
-#+begin_src elisp :tangle packages.el
-(package! copilot
-  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
-#+end_src
-#+begin_src elisp
-(use-package! copilot
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("C-[" . 'copilot-complete)
-              ("C-]" . 'copilot-accept-completion)
-              ("C-}" . 'copilot-accept-completion-by-word))
-  :config
-  (setq copilot-idle-delay 0.2))
-#+end_src
-=======
