@@ -1,7 +1,7 @@
 ;;; init.el -*- lexical-binding: t; -*-
 
 (doom! :app
-       (rss +org)        ; emacs as an RSS reader
+       ;; (rss +org)        ; emacs as an RSS reader
 
        :checkers
        syntax              ; TODO try with +childframe
@@ -34,7 +34,7 @@
        emacs-lisp                          ; drown in parentheses
        (latex +fold +lsp)                  ; TODO install TexLab
        markdown                            ;
-       (org +dragndrop +roam2)             ;
+       (org +hugo +dragndrop +roam2)             ;
        (python +lsp +pyright +tree-sitter) ; TODO any uv integration? or ty?
        sh                                  ;
        (yaml +tree-sitter)                 ; JSON, but readable

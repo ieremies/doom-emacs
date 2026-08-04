@@ -1,16 +1,6 @@
 #+title: Proto Typst's Doom-Emacs Module
 
 
-* Dealing with typst files
-** TODO Tree-sitter
-*** TODO Jinx (other spell checking?)
-*** TODO Mixed pitch
-** TODO LSP (tinymist)
-https://myriad-dreamin.github.io/tinymist
-- [ ] =doctor.el= check for the binaries
-** TODO Typst-preview
-https://github.com/havarddj/typst-preview.el
-- might be duplicated with lsp-typst? I think it has some preview functionality
 * Org-mode integration
 ** org-export
 Problems I have identified:
@@ -31,6 +21,30 @@ Problems I have identified:
         org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
 #+end_src
 ** https://github.com/jakebox/org-preview-html?tab=readme-ov-file#usage
+
+* Writing Typst code
+
+** The core module
+- typst-ts-mode
+- [[https://myriad-dreamin.github.io/tinymist][Tinymist]] through eglot
+
+** Integration with other packages
+- jinx (and other spell checks?): mark some faces as to not check
+- mixed pitch: one annoying fact is that the space is not marked as fixed space
+
+* Previewing
+There are two options:
+- using ~typst-ts-watch-mode~ and using something like ~super-save~ to automatically save the file.
+- using [[https://github.com/havarddj/typst-preview.el][havarddj/typst-preview.el]], which allows you to click and navigate to the source code at point.
+  - when previewing slides: ~(setq-local typst-preview-preview-mode "slide")~.
+
+* Org-mode integration
+
+** Exporting from org-mode
+
+** Using typst in org-mode files
+
+*** Math
 
 * Typst itself
 Some typst packages I've looked into:

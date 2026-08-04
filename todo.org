@@ -1,27 +1,60 @@
 #+Title: Todo
 
 * General
+- quando eu escrevo  `v ` fora do modo matemático, ele poderia colocar o $ imediatamente.
+- Esconder o $ assim como ele esconde o *.
+- Quando escrevendo um paper, seria interessante um inserção de citação registrar um abrev de citação. Tipo, após citar @Held12, escrever Held já troca para [cite:@Held12].
 * Nano-emacs
-https://github.com/rougier/book-mode/blob/master/article/screenshot.png
-https://github.com/rougier/book-mode/blob/master/book-mode.png
-https://github.com/rougier/nano-emacs/blob/master/images/nano-mu4e.png
-https://github.com/rougier/svg-tag-mode/blob/main/examples/example-1.el
-** https://github.com/rougier/book-mode
-** https://github.com/rougier/nano-sidebar
-** https://github.com/rougier/svg-tag-mode
-** https://github.com/rougier/org-margin
+- https://github.com/rougier/book-mode/blob/master/article/screenshot.png
+- https://github.com/rougier/book-mode/blob/master/book-mode.png
+- https://github.com/rougier/nano-emacs/blob/master/images/nano-mu4e.png
+- https://github.com/rougier/svg-tag-mode/blob/main/examples/example-1.el
+- https://github.com/rougier/book-mode
+- https://github.com/rougier/nano-sidebar
+- https://github.com/rougier/svg-tag-mode
+- https://github.com/rougier/org-margin
+- https://github.com/rougier/buffer-box
+- https://github.com/rougier/nano-calendar
 * App
-** [#B] rss
+** rss
+[https://github.com/skeeto/elfeed](https://github.com/skeeto/elfeed)
+[https://github.com/karthink/elfeed-tube](https://github.com/karthink/elfeed-tube?tab=readme-ov-file#setup)
+[https://github.com/remyhonig/elfeed-org](https://github.com/remyhonig/elfeed-org)
+Configurar filtros para coisas de PoE, LoL e demais, bem como algo para tirar vídeos de mais de 2h (lives).
+*** elfeed-tube
+#+begin_src elisp :tangle packages.el
+(package! elfeed-tube)
+#+end_src
+#+begin_src elisp
+(use-package elfeed-tube
+  :after elfeed
+  :demand t
+  :config
+  (elfeed-tube-setup)
+  :bind (:map elfeed-show-mode-map
+         ("F" . elfeed-tube-fetch)
+         ([remap save-buffer] . elfeed-tube-save)
+         :map elfeed-search-mode-map
+         ("F" . elfeed-tube-fetch)
+         ([remap save-buffer] . elfeed-tube-save)))
+#+end_src
 * Checkers
+- [ ] Autocorrect words, perhaps based on context (AI?) or automatic dabbrev-expand.
+- https://github.com/emacs-languagetool/eglot-ltex-plus
+- https://www.reddit.com/r/emacs/comments/1sp1wly/launching_a_new_grammarspell_checking_tool_for/
 ** Grammar
+À esse ponto, eu acho que eu só desisto... usa no vscode
 *** Harper
 https://github.com/Automattic/harper/discussions/150
 *** Language tool
 https://github.com/PillFall/languagetool.el
 https://github.com/languagetool-org/languagetool
 https://melpa.org/#/flycheck-languagetool
+*** Textidote
+https://github.com/sylvainhalle/textidote
+*** AI aided
+https://www.reddit.com/r/emacs/comments/185n3yo/emacs_meets_chatgpt_for_flawless_grammar_and/
 * Completion
-- [ ] Autocorrect words, perhaps based on context (AI?) or automatic dabbrev-expand.
 ** Hippie
 This is something I should use more.
 #+begin_src elisp
@@ -62,6 +95,7 @@ https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-comman
         '((left-fringe . 8)
           (right-fringe . 8))))
 #+end_src
+https://www.reddit.com/r/emacs/comments/1t0vmko/verticoposframepreview_a_preview_sidecar_for/
 ** Consult
 #+begin_src elisp :tangle no
 (consult-customize
@@ -74,7 +108,9 @@ https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-comman
  consult-line-thing-at-point
  :initial (thing-at-point 'symbol))
 #+end_src
+- https://www.reddit.com/r/emacs/comments/1pweleu/consultsnapfile_instant_file_search_for_consult/
 ** Flyover
+https://github.com/konrad1977/flyover
 #+begin_src elisp :tangle packages.el
 (package! flyover
   :recipe (:host github :repo "konrad1977/flyover"))
@@ -95,29 +131,46 @@ https://github.com/minad/vertico?tab=readme-ov-file#configure-vertico-per-comman
     (setq flyover-text-tint-percent 50))
 #+end_src
 ** https://code.bsdgeek.org/adam/corfu-candidate-overlay
+** VOMPECCC
+https://www.reddit.com/r/emacs/comments/1sn4d2d/vompeccc_a_modular_completion_framework_for_emacs/
+** [[https://www.reddit.com/r/emacs/comments/1nxinqo/miniposframe_mirror_your_minibuffer_in_a_floating/][mini-posframe]]
 * Editor
+- https://github.com/jacktasia/dumb-jump : "jump to definition" and "find references" package with support for 60+ programming languages that favors "just working". 
+- https://github.com/meow-edit/meow : Meow is yet another modal editing mode for Emacs. Meow aims to blend modal editing into Emacs with minimal interference with its original key-bindings, avoiding most of the hassle introduced by key-binding conflicts. This leads to lower necessary configuration and better integration. More is achieved with fewer commands to remember.
+- https://github.com/alphapapa/prism.el : prism disperses lisp forms (and other languages) into a spectrum of color by depth. It’s similar to rainbow-blocks, but it respects existing non-color face properties, and allows flexible configuration of faces and colors. It also optionally colorizes strings and/or comments by code depth in a similar, customizable way.
+- https://github.com/jamescherti/inhibit-mouse.el : disabling of mouse input
+
+
+
+** Folding and indentation
+- Quando escrevo em C++, algumas novas linhas assumem identação de 2 espaços. Não sei nem quem causa isso.
+- https://github.com/jamescherti/kirigami.el
+- https://github.com/jamescherti/outline-indent.el
+- https://github.com/emacs-tree-sitter/treesit-fold
+- https://www.jamescherti.com/emacs-maintaining-proper-indentation/
+- https://github.com/jdtsmith/indent-bars
 ** [[https://github.com/magnars/expand-region.el][magnars/expand-region.el]]
 Expand (contract) selected regions.
 ** https://github.com/cpitclaudel/quick-peek or https://github.com/Ziqi-Yang/peek
-** [#A] https://xenodium.com/emacs-generate-a-swift-initializer
+** https://xenodium.com/emacs-generate-a-swift-initializer
 ** https://mjdiloreto.github.io/posts/yasnippet-helpful-buffer/
-** https://github.com/emacs-tree-sitter/treesit-fold
-** https://github.com/jamescherti/kirigami.el
-** https://github.com/jamescherti/outline-indent.el
 ** https://github.com/mickeynp/combobulate
 ** Minimap of context overview
 Seria interessante ter um minimapa contextual. Num arquivo de c, mostrar as funções/classes/variáveis (como o treemacs faz), num arquivo org, mostrar as headlines etc...
 [[https://github.com/knupfer/org-panes/blob/master/org-panes.el][org-panes/org-panes.el at master · knupfer/org-panes · GitHub]]
 
 * Emacs
+** [[https://github.com/bbatsov/super-save][Super-save]]
 ** https://github.com/armindarvish/consult-omni
-** [#B] [[https://github.com/casouri/xeft][casourti/xeft]] or [[https://github.com/hasu/notdeft][hasu/notdeft]]
 ** https://protesilaos.com/codelog/2023-02-28-emacs-beframe-demo/
 ** pdf
 https://codeberg.org/divyaranjan/emacs-reader
 https://www.reddit.com/r/emacs/comments/1pgliu9/a_new_pdf_reader_for_emacs/
+https://www.reddit.com/r/emacs/comments/1qe99jm/psa_pdftools_now_supports_continuous_scrolling/
+https://www.reddit.com/r/emacs/comments/1nspl8r/pdftools_continuous_scrolling/
 ** tramp
 https://www.reddit.com/r/emacs/comments/1pgfgtr/announcing_tramphlo_higher_level_operations/
+https://www.reddit.com/r/emacs/comments/1qecqbs/experimenting_with_a_faster_tramp_backend_using/
 I might want to use this to code on the opt.
 ** dired
 https://github.com/Fuco1/dired-hacks
@@ -127,6 +180,7 @@ https://github.com/purcell/diredfl
 
 * Languages
 ** uv + ty :python:lang:
+https://www.reddit.com/r/emacs/comments/1sy965x/uvel_a_declarative_emacs_interface_for_the_uv/
 ** Texpresso
 #+begin_src elisp :tangle no
 (add-to-list 'load-path
@@ -135,23 +189,56 @@ https://github.com/purcell/diredfl
 #+end_src
 ** https://github.com/haji-ali/preview-point
 * Org-mode
-** Change Latex inline math to Typst inline math :org:
-** https://github.com/fbkarsdorp/org-agenda-dashboard
-** Adicionar linhas após o fim do dia na org-agenda
-** Rearranjar o org-super-agenda
-Fazer uma subseção com as coisas concluídas hoje.
-** https://github.com/isamert/corg.el
-** https://github.com/4honor/org-excalidraw
-** https://github.com/yibie/org-zettel-ref-mode
+- Change inline math from LaTeX to Typst
+- [[https://github.com/4honor/org-excalidraw][org-excalidraw]] :: Create, open, export, and display excalidraw in org mode.
+- [[https://github.com/isamert/corg.el][corg]] :: completion-at-point for Org-mode source block headers, dynamic block headers, #+call syntax, noweb references inside src blocks.
+- [[https://www.reddit.com/r/emacs/comments/1plrd38/orgtransclusionblocks_transclude_from_src_block/][org-transclude]] 
 ** Publishing
-*** https://ogbe.net/blog/emacs_org_static_site
-*** https://pjs64.netlify.app/2205/04
+- [[https://ogbe.net/blog/emacs_org_static_site][Using Emacs and Org-mode as a static site generator]]
+- [[https://pjs64.netlify.app/2205/04][Home Sweet Home]] 
+- https://www.reddit.com/r/emacs/comments/17fzthl/orgpublish_sorting_posts_based_on_data_in_the_org/
 
 ** Anotation
 Main packages: org-node + citar-org-mode + consult-notes
 Other packages: org-super+links + org-supertag + org-transclusion
 Alternatives: org-roam + citar-org-roam + consult-org-roam
 Might be interesting packages: [[https://github.com/d12frosted/vulpea][vulpea]]
+
+- org-roam :: https://github.com/org-roam/org-roam
+  - org-roam-tree :: https://github.com/bradmont/org-roam-tree
+- org-noter :: https://github.com/weirdNox/org-noter
+- org-supertag :: https://github.com/yibie/org-supertag/
+- org-super-links :: https://github.com/toshism/org-super-links
+- org-node :: https://github.com/meedstrom/org-node
+- org-brain :: https://github.com/Kungsgeten/org-brain
+- deft :: http://jblevins.org/projects/deft/
+  - notdeft :: https://github.com/hasu/notdeft
+  - xeft :: https://github.com/casouri/xeft
+- org-zettelkasten :: https://github.com/l3kn/org-zettelkasten
+- org-wiki :: https://github.com/caiorss/org-wiki
+- howm :: https://kaorahi.github.io/howm/
+- hyperbole :: https://www.gnu.org/software/hyperbole/
+- zk :: https://github.com/localauthor/zk
+- ekg :: https://github.com/ahyatt/ekg
+- orgrr :: https://github.com/rtrppl/orgrr
+- denote :: https://github.com/protesilaos/denote
+- vulpea :: https://github.com/d12frosted/vulpea
+  - [[https://github.com/d12frosted/vulpea/blob/master/docs/comparison.org][vulpea/docs/comparison.org at master · d12frosted/vulpea · GitHub]] 
+  - [[https://www.d12frosted.io/posts/2025-11-28-vulpea-v2-breaking-up-with-org-roam][Vulpea v2: a story of breaking up with org-roam - Boris Buliga]]
+- org-remark :: https://github.com/nobiot/org-remark
+
+Bibtex related
+- citar :: https://github.com/emacs-citar/citar
+  - citar-typst :: https://codeberg.org/ashton314/citar-typst 
+
+Others
+- small-notes :: https://github.com/villarragut/small-notes
+- grove :: https://github.com/jonathanchu/grove
+- TILES :: https://github.com/ctanas/tiles/
+** Agenda
+- https://github.com/fbkarsdorp/org-agenda-dashboard
+- Adicionar linhas após o fim do dia na org-agenda
+- Rearranjar o org-super-agenda. Fazer uma subseção com as coisas concluídas hoje.
 
 * UI
 ** Treemacs
@@ -192,6 +279,7 @@ Needs =brew/emacs-mac=, only emacs package that supports stripes.
 ** Cursor trail
 https://www.reddit.com/r/emacs/comments/1mho85x/cursor_trails_in_emacs/
 https://github.com/manateelazycat/holo-layer?tab=readme-ov-file#jelly-cursor-animation
+https://www.reddit.com/r/emacs/comments/1q3o5qa/cursor_animation_for_emacs/
 ** fuzzy clock
 https://github.com/trevoke/fuzzy-clock.el
 * Tools
@@ -228,26 +316,37 @@ https://github.com/trevoke/fuzzy-clock.el
   (global-set-key "\C-x\C-n" 'dslide-deck-forward)
   (global-set-key "\C-x\C-p" 'dslide-deck-backward))
 #+end_src
+** https://github.com/dakra/ghostel
 
 * AI
 Would like to also look into [[https://www.youtube.com/watch?v=bsRnh_brggM][Every LLM in Emacs]], [[https://github.com/karthink/gptel][karthink/gptel]] and [[https://github.com/khoj-ai/khoj][khoj-ai/khoj]].
-
+https://github.com/shareAI-lab/learn-claude-code
 https://github.com/armindarvish/consult-omni
+https://github.com/ComposioHQ/awesome-claude-skills
 https://github.com/khoj-ai/khoj - RAG
-** AI pair programming
-*** Aider
-- [[github:MatthewZMD/aidermacs][aidermacs]]
-- [[github:tninja/aider.el]].
-*** Claude-code
+opencode
 - [[https://github.com/manzaltu/claude-code-ide.el][GitHub - manzaltu/claude-code-ide.el: Claude Code IDE integration for Emacs]]
-** https://github.com/lanceberge/elysium
-** https://www.reddit.com/r/emacs/comments/1g57cu7/spiffying_up_automatic_smerge_insertions_animated/
-** https://www.reddit.com/r/emacs/comments/1mf6j42/dont_generate_retrieve_and_transform_gptel_tools/
-** https://www.reddit.com/r/emacs/s/StOsEiJ8iM
+- https://github.com/lanceberge/elysium
+- https://www.reddit.com/r/emacs/comments/1g57cu7/spiffying_up_automatic_smerge_insertions_animated/
+- https://www.reddit.com/r/emacs/comments/1mf6j42/dont_generate_retrieve_and_transform_gptel_tools/
+- https://www.reddit.com/r/emacs/s/StOsEiJ8iM
 ** Grammar correction script
 Percorrer iterativamente cada parágrafo, primeiro perguntando para corrigir qualquer possível erro de gramática, ortografia ou formalização.
 
 Depois, para fazer um que revisa o texto, conferindo símbolos, definições ou conceitos faltantes.
+** Agents
+- claude-code-ide :: [1.6k] https://github.com/manzaltu/claude-code-ide.el
+  - Native integration with Claude Code CLI through the Model Context Protocol (MCP). Bidirectional bridge between Claude and Emacs, enabling Claude to understand and leverage Emacs’ powerful features—from LSP and project management to custom Elisp functions. This transforms Claude into a true Emacs-aware AI assistant that works within your existing workflow and can interact with your entire Emacs ecosystem.
+- agent-shell :: [1.2k] https://github.com/xenodium/agent-shell
+  - A native Emacs buffer to interact with LLM agents powered by ACP 
+  - https://xenodium.com/introducing-acpel
+- opencode.el :: https://codeberg.org/sczi/opencode.el
+  - Emacs-based interface for the open-source AI coding agent OpenCode, designed to provide a more stable and familiar experience than the agent's official TUI by leveraging Emacs’ mature, highly customizable framework. By building upon core Emacs components like comint, vtable, and various major modes, the package offers a consistent, text-buffer-based workflow that integrates deeply with the editor—supporting features like adding buffers or regions to the chat context, Magit integration for managing worktrees, and automated hooks for file editing tasks, such as syntax fixing, testing, and error reporting back to the LLM. 
+- eca :: [442]  https://github.com/editor-code-assistant/eca-emacs
+  - ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more. It's everything automatic and smooth as UX and re-usability across editors is the main goal of ECA.
+- aider :: [45.8k] https://github.com/Aider-AI/aider
+  - aider.el :: [679] https://github.com/tninja/aider.el
+  - aidermacs :: [905] https://github.com/MatthewZMD/aidermacs
 * non-emacs
 - [[https://github.com/noisrucer/girok][noisrucer/girok]] CLI scheduler
 - [[https://github.com/Ryu0118/Kusa][Ryu0118/Kusa]] CLI display github contribution graph.
@@ -261,4 +360,5 @@ Depois, para fazer um que revisa o texto, conferindo símbolos, definições ou 
 - chat: Claude, Qwen, DeepSeek code.
 - Discord mais leve
 - ActivityWatcher + timewarrior = alguma forma de journalling
+
 

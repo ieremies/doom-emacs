@@ -118,29 +118,6 @@ Default window configuration.
   (doom-nano-modeline-mode 1)
   (global-hide-mode-line-mode 1))
 #+end_src
-* App
-** rss
-[https://github.com/skeeto/elfeed](https://github.com/skeeto/elfeed)
-[https://github.com/karthink/elfeed-tube](https://github.com/karthink/elfeed-tube?tab=readme-ov-file#setup)
-[https://github.com/remyhonig/elfeed-org](https://github.com/remyhonig/elfeed-org)
-Configurar filtros para coisas de PoE, LoL e demais, bem como algo para tirar v√≠deos de mais de 2h (lives).
-*** elfeed-tube
-#+begin_src elisp :tangle packages.el
-(package! elfeed-tube)
-#+end_src
-#+begin_src elisp
-(use-package elfeed-tube
-  :after elfeed
-  :demand t
-  :config
-  (elfeed-tube-setup)
-  :bind (:map elfeed-show-mode-map
-         ("F" . elfeed-tube-fetch)
-         ([remap save-buffer] . elfeed-tube-save)
-         :map elfeed-search-mode-map
-         ("F" . elfeed-tube-fetch)
-         ([remap save-buffer] . elfeed-tube-save)))
-#+end_src
 * Checkers
 ** Spell
 *** Jinx
@@ -167,7 +144,6 @@ Configurar filtros para coisas de PoE, LoL e demais, bem como algo para tirar v√
   (define-key jinx-overlay-map
     [down-mouse-1]
     `(menu-item "" (keymap) :filter ,#'jinx--correct-menu)))
-
 #+end_src
 
 Save misspelling and correction as abbreviation.
@@ -184,8 +160,6 @@ The misspelled word is taken from OVERLAY.  WORD is the corrected word."
 
   (advice-add 'jinx--correct-replace :before #'jinx--add-to-abbrev))
 #+end_src
-** Grammar
-I give up... just use VSCode when you are done...
 * Completion
 ** corfu
 #+begin_src emacs-lisp :tangle yes
@@ -199,10 +173,8 @@ I give up... just use VSCode when you are done...
   (set-face-attribute 'corfu-current nil
                       :background "#FAFAFA"))
 #+end_src
-
 I have twice ran into the problem of "no registered capabilities" for an LSP.
 It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it all.
-
 ** hotfuzz+orderless
 #+begin_src elisp :tangle packages.el
 (package! hotfuzz
@@ -226,7 +198,6 @@ It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it a
                   "Filter first component with Hotfuzz, rest with Orderless."))
   (put 'hotfuzz+orderless 'completion--adjust-metadata #'hotfuzz--adjust-metadata))
 #+end_src
-** vertico
 * Editor
 ** Evil
 #+begin_src elisp
@@ -248,8 +219,8 @@ It seems to be solved by deleting =~.config/emacs/eln-cache= and rebuilding it a
   (dirvish-side-follow-mode)
   (setq dirvish-side-width 25))
 #+end_src
-*** FIXME In dirvish
-When pressing ~alt~, it triggers ~dirvish-subtree-toggle~, the selection buffer does appear, the cursor previews on the background, but, after selecting and pressing ~RET~, nothing happens and the cursor comes
+*** IDEA In dirvish
+When pressing ~tab~, it triggers ~dirvish-subtree-toggle~, the selection buffer does appear, the cursor previews on the background, but, after selecting and pressing ~RET~, nothing happens and the cursor comes
 ** buffer-terminator
 #+begin_src emacs-lisp :tangle packages.el
 (package! buffer-terminator)
@@ -270,6 +241,18 @@ When pressing ~alt~, it triggers ~dirvish-subtree-toggle~, the selection buffer 
   :config
   (buffer-terminator-mode 1))
 #+end_src
+** Buffer to pdf
+#+begin_src emacs-lisp :tangle packages.el
+(package! buffer-to-pdf
+  :recipe (:host github :repo "protesilaos/buffer-to-pdf"))
+#+end_src
+#+begin_src emacs-lisp :tangle yes
+(use-package! buffer-to-pdf
+  :config
+  ;; Configure `buffer-to-pdf-directory' to specify where PDF files are stored.
+  ;; This is the default value:
+  (setq buffer-to-pdf-directory (expand-file-name "~/Downloads/")))
+#+end_src
 * Languages
 ** CC
 #+begin_src elisp
@@ -289,10 +272,8 @@ When pressing ~alt~, it triggers ~dirvish-subtree-toggle~, the selection buffer 
   (set-eglot-client! 'cc-mode (append '("clangd") my/clangd-args)))
 #+end_src
 
-# TODO: ff-find-other-file
 ** Python
-*** TODO Ruff
-I am not sure what is the problem here: either the global python eviroment or the lack of a .venv in each project...
+*** Ruff
 #+begin_src elisp
 ;; (after! eglot
 ;;   (add-hook 'python-mode-hook 'eglot-ensure)
@@ -326,7 +307,6 @@ I am not sure what is the problem here: either the global python eviroment or th
   (setf (cadr tex-list) "%(tex)"
         (cadr latex-list) "%l")))
 #+end_src
-
 * Org-mode
 ** General
 #+begin_src elisp
@@ -455,7 +435,9 @@ Toggle the appearance of hidden elements in org-mode.
          ",")
         org-cite-export-processors
         `((latex . (biblatex "style=numeric-comp,bibstyle=ieee" "auto"))
-          (t . csl))))
+          (t . basic))
+        )
+  )
 #+end_src
 
 *** citar
@@ -591,9 +573,23 @@ By doing a face-font-rescale, for some reason, the first two levels of org-moder
 (package! org-special-block-extras)
 #+end_src
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp 
 (use-package! org-special-block-extras
-  :after org)
+  :after org
+  :config
+  (org-deflink todo
+               "Exports a 'todo' link to Typst syntax #todo[...]. 
+In other backends, it just displays the description or label."
+               ;; Optional: Make it look distinct in your Org buffer
+               [:face '(:foreground "orange" :weight bold)
+                :help-echo "Typst Todo: #todo[...]"]
+               
+               (cond
+                ((equal o-backend 'typst)
+                 (format "#todo[%s]" (or o-description o-label)))
+                ;; Fallback for other backends (HTML, LaTeX, etc.)
+                (t (or o-description o-label))))
+  )
 #+end_src
 * UI
 ** Olivetti
@@ -602,7 +598,6 @@ By doing a face-font-rescale, for some reason, the first two levels of org-moder
 (package! auto-olivetti
   :recipe (:host sourcehut :repo "ashton314/auto-olivetti"))
 #+end_src
-
 #+begin_src emacs-lisp :tangle yes
 (use-package! olivetti
   :hook (text-mode . olivetti-mode)
@@ -637,13 +632,12 @@ I have to use [[https://github.com/vadimcn/codelldb/blob/v1.10.0/MANUAL.md][code
 (after! lsp-mode
   (add-hook! 'lsp-mode-hook (lambda () (lsp-inlay-hints-mode 1))))
 #+end_src
-
+[[https://www.reddit.com/r/emacs/comments/1n3o2we/on_macos_in_gui_with_eglot_turned_on_when_the/][See this]]
 #+begin_src emacs-lisp :tangle yes
 (after! eglot
-  ;; https://www.reddit.com/r/emacs/comments/1n3o2we/on_macos_in_gui_with_eglot_turned_on_when_the/
+  ;; 
   (setq eglot-code-action-indicator "*"))
 #+end_src
-
 * AI
 ** GPTel
 Enabled by the =llm= doom module.
@@ -673,5 +667,3 @@ It causes around 0.3s of startup time.
   :config
   (setq copilot-idle-delay 0.2))
 #+end_src
-
-Another option is codeium, which is more private (and faster?).
